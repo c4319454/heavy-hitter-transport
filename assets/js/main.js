@@ -38,6 +38,8 @@
     setupForm();
     setupYear();
     setupEstimator();
+    setupScrollProgress();
+    setupHeroGlow();
   });
 
   function injectContactInfo() {
@@ -67,6 +69,41 @@
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
+  }
+
+  function setupScrollProgress() {
+    var bar = document.getElementById("scroll-progress");
+    if (!bar) return;
+    var ticking = false;
+    function update() {
+      var doc = document.documentElement;
+      var scrollTop = window.scrollY || doc.scrollTop;
+      var max = (doc.scrollHeight - doc.clientHeight) || 1;
+      var pct = Math.min(100, Math.max(0, (scrollTop / max) * 100));
+      bar.style.width = pct + "%";
+      ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }, { passive: true });
+    update();
+  }
+
+  function setupHeroGlow() {
+    var hero = document.querySelector(".hero");
+    var glow = document.getElementById("hero-glow");
+    if (!hero || !glow) return;
+    if (window.matchMedia && window.matchMedia("(hover: none)").matches) return;
+    hero.addEventListener("pointermove", function (e) {
+      var rect = hero.getBoundingClientRect();
+      var x = ((e.clientX - rect.left) / rect.width) * 100;
+      var y = ((e.clientY - rect.top) / rect.height) * 100;
+      glow.style.setProperty("--mx", x + "%");
+      glow.style.setProperty("--my", y + "%");
+    }, { passive: true });
   }
 
   function setupMobileMenu() {
