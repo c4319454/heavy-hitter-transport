@@ -382,6 +382,20 @@ h1, h2, h3, h4 {
 .price-tag .amount sup { font-size: 0.4em; top: -0.5em; }
 .price-tag .amount-note { color: var(--c-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
 
+.offer-scope {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 26px;
+  padding: 16px 18px;
+  background: rgba(200,161,59,0.08);
+  border: 1px solid rgba(200,161,59,0.28);
+  border-radius: var(--radius-md);
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: #e7e6e1;
+}
+.offer-scope strong { color: var(--c-gold); }
+
 .offer-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

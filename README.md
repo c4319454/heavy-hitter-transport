@@ -15,8 +15,8 @@ no build step, no framework, deploys straight to GitHub Pages.
 │   ├── css/styles.css      # all styles (CSS variables for brand colors)
 │   ├── js/main.js          # nav, mobile menu, FAQ accordion, reveal animation, quote form
 │   └── images/
-│       ├── hero-truck.jpg      # hero photo (AI-generated placeholder — replace with real truck photos)
-│       └── truck-detail.jpg    # truck spec section photo (placeholder)
+│       ├── hero-truck.jpg      # hero photo — real Heavy Hitter truck photo (cropped/blurred/enhanced)
+│       └── truck-detail.jpg    # truck spec section photo — real Heavy Hitter truck photo
 ├── favicon.svg
 ├── robots.txt
 ├── sitemap.xml
@@ -28,54 +28,69 @@ no build step, no framework, deploys straight to GitHub Pages.
 Open `assets/js/main.js` and edit the two variables near the top:
 
 ```js
-var PHONE_DISPLAY = "PHONE_PLACEHOLDER"; // what visitors SEE, e.g. "(347) 555-0123"
-var PHONE_TEL     = "PHONE_PLACEHOLDER"; // what tel:/sms: links USE, e.g. "+13475550123"
+var PHONE_DISPLAY = "(347) 832-5320"; // what visitors SEE
+var PHONE_TEL     = "+13478325320";   // what tel:/sms: links USE
 ```
 
 Every `data-phone-display`, `data-tel-link`, and `data-sms-link` element on the
 page (nav, hero, quote section, call CTA, footer, mobile bottom bar) updates
 automatically from these two values — you never have to hunt through the HTML.
 
-Also update the placeholder phone number inside the `LocalBusiness`-style
-structured data block near the top of `index.html` (`"telephone": "PHONE_PLACEHOLDER"`).
+Also update the phone number inside the `LocalBusiness`-style structured data
+block near the top of `index.html` (`"telephone": "+13478325320"`).
 
 ## 2. Change the email
 
 Same file, same block:
 
 ```js
-var EMAIL_ADDRESS = "EMAIL_PLACEHOLDER"; // e.g. "dispatch@heavyhittertransportllc.com"
+var EMAIL_ADDRESS = "dprashad21@gmail.com";
 ```
 
 All `data-email-display` / `data-mail-link` elements update automatically.
-Also update `"email": "EMAIL_PLACEHOLDER"` in the structured data block in `index.html`.
+Also update `"email": "dprashad21@gmail.com"` in the structured data block in `index.html`.
 
-## 3. Change pricing (the $700 package)
+## 3. Change pricing (the $700 package and Tri-State rate)
+
+The site now distinguishes two pricing zones — keep both in sync if either changes:
+
+- **$700 flat** — full truckload, pickup and delivery entirely within NYC's five
+  boroughs.
+- **$700+, negotiable** — jobs reaching into the upper Tri-State area
+  (Long Island, Nassau, Suffolk, Westchester, NJ, CT), priced by mileage and load size.
 
 In `index.html`, search for the **FEATURED OFFER** section (`id="offer"`):
 
 - The big number is inside `<div class="amount"><sup>$</sup>700</div>` — edit `700`.
+- The `<p class="offer-scope">` box right below the price explains the 5-borough
+  vs. Tri-State split — edit the wording/number if the Tri-State starting rate changes.
 - The included items are the `<ul class="offer-grid">` list — add/remove `<li>` lines.
 - The disclosure paragraph right below the CTA button is the legal/pricing caveat —
   keep it visible; don't delete it, just edit the wording if your terms change.
-- The same price also appears in the FAQ answers ("How much is the standard day
-  package?" and "Is the $700 price guaranteed for every job?") — update those too
-  if the price changes.
+- The same pricing split also appears in: the **Service Area** section's
+  `<p class="area-note">`, and the FAQ answers ("How much is the standard day
+  package?", "Where do you operate?" and "Is the $700 price guaranteed for every
+  job?") — update those too if either number changes.
 
 ## 4. Replace the truck photographs
 
-Drop your real photos into `assets/images/`, keeping (or renaming to) these two
-file names so you don't have to touch the HTML:
+The current photos in `assets/images/` (`hero-truck.jpg`, `truck-detail.jpg`) are
+real photos of the actual Heavy Hitter Transport truck, cropped to frame it, with
+the visible license plate and an unrelated third-party decal on the door blurred
+out, brightness/contrast lifted (they were night flash shots), and padded with
+black bars to fit the site's layout without further cropping the truck. Drop in
+new/better photos any time by replacing these two files (keep the same filenames
+so you don't have to touch the HTML):
 
 - `hero-truck.jpg` — the big hero background photo (recommend ≥1600px wide, landscape)
 - `truck-detail.jpg` — the closer detail shot in the "The Truck" section (recommend ≥1200px wide)
 
 If you use different filenames, update the two `<img src="...">` tags in
 `index.html` (hero section and `id="truck"` section) to match, and update the
-`alt` text to describe the real photo.
+`alt` text to describe the real photo. If a new photo shows a visible license
+plate or any signage that isn't Heavy Hitter's own, blur or crop it out before
+publishing, the same way the current photos were handled.
 
-The current images are AI-generated placeholders standing in for the actual
-Heavy Hitter Transport truck — replace them with real photos whenever you have them.
 
 ## 5. Change service areas
 
@@ -150,8 +165,8 @@ To set up Pages from scratch on a fresh copy of this repo:
 
 This site intentionally does **not** include reviews, ratings, testimonials,
 customer counts, years-in-business claims, awards, or license/DOT/MC numbers
-that weren't supplied. Placeholders are clearly marked in the code
-(`PHONE_PLACEHOLDER`, `EMAIL_PLACEHOLDER`, `USDOT_PLACEHOLDER`,
-`MC_NUMBER_PLACEHOLDER`, `INSURANCE_PLACEHOLDER`, `TRUCK_SPECS_PLACEHOLDER`).
-Fill them in with real information as it becomes available — never replace
-them with invented numbers.
+that weren't supplied. Phone and email are the real business contact details.
+USDOT, MC, and insurance numbers are not yet finalized, so they are simply
+omitted from the Business Info section for now rather than shown as
+placeholders — add them there once they're available. Never replace any of
+these with invented numbers.

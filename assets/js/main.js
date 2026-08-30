@@ -7,10 +7,10 @@
 (function () {
   "use strict";
 
-  /* ---- Contact placeholders — replace with real business info ---- */
-  var PHONE_DISPLAY = "PHONE_PLACEHOLDER";     // e.g. "(347) 555-0123"
-  var PHONE_TEL = "PHONE_PLACEHOLDER";         // e.g. "+13475550123" (digits/plus only, used in tel: links)
-  var EMAIL_ADDRESS = "EMAIL_PLACEHOLDER";     // e.g. "dispatch@heavyhittertransportllc.com"
+  /* ---- Business contact info ---- */
+  var PHONE_DISPLAY = "(347) 832-5320";
+  var PHONE_TEL = "+13478325320";              // digits/plus only, used in tel:/sms: links
+  var EMAIL_ADDRESS = "dprashad21@gmail.com";
   /* Optional: point this at a form backend (Formspree, Getform, a
      serverless endpoint, etc). Leave empty to use the mailto fallback. */
   var FORM_ENDPOINT = "";
