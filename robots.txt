@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://c4319454.github.io/heavy-hitter-transport/sitemap.xml
+Sitemap: https://www.heavyhittertransport.com/sitemap.xml
