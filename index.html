@@ -141,14 +141,18 @@
         <span>Commercial Transportation</span>
         <span>Proof Of Delivery Available</span>
       </div>
+      <!-- HIDDEN FOR NOW: credential chips (USDOT / NY Operating Authority / Insurance) are
+           still being verified/obtained. Kept in the code so this can be turned back on with
+           a single uncomment once verification comes through — do not delete.
       <div class="trust-pending reveal" id="trust-pending" aria-label="Carrier credentials, pending confirmation">
-        <!-- Placeholders only — populated from BUSINESS_CREDENTIALS in assets/js/main.js once
+        <!- Placeholders only — populated from BUSINESS_CREDENTIALS in assets/js/main.js once
              the owner supplies confirmed USDOT / NY authority / insurance information. Never
-             invent numbers here or display "licensed"/"authorized" without confirmed data. -->
+             invent numbers here or display "licensed"/"authorized" without confirmed data. ->
         <div class="pending-chip"><span class="pending-k">USDOT #</span><span class="pending-v" data-usdot-display>Pending Verification</span></div>
         <div class="pending-chip"><span class="pending-k">NY Operating Authority #</span><span class="pending-v" data-ny-authority-display>Pending Verification</span></div>
         <div class="pending-chip"><span class="pending-k">Commercially Insured</span><span class="pending-v" data-insurance-display>Confirmation Pending</span></div>
       </div>
+      -->
     </div>
   </section>
 
@@ -1096,12 +1100,15 @@
       <div class="footer-brand">
         <strong style="font-family:var(--ff-display); text-transform:uppercase; letter-spacing:.04em; font-size:18px;">Heavy Hitter Transport LLC</strong>
         <p>New York City Box Truck Transportation<br />Freight &bull; Pallets &bull; Commercial Delivery</p>
+        <!-- HIDDEN FOR NOW: same credential placeholders as the trust strip, still being
+             verified. Kept in the code — see BUSINESS_CREDENTIALS in assets/js/main.js —
+             uncomment once confirmed. Do not delete.
         <p class="footer-credentials">
-          <!-- Placeholders only — see BUSINESS_CREDENTIALS in assets/js/main.js. -->
           USDOT #: <span data-usdot-display>Pending Verification</span><br />
           NY Operating Authority #: <span data-ny-authority-display>Pending Verification</span><br />
           Commercial Insurance: <span data-insurance-display>Confirmation Pending</span>
         </p>
+        -->
       </div>
 
       <div class="footer-cols">
