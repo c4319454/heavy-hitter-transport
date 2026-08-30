@@ -56,19 +56,86 @@
     }
   };
 
+  /* ---- Business credentials (trust strip placeholders) ----
+     Leave every value empty/false until the owner supplies confirmed information. Never invent
+     a number here. Filling one in and redeploying is the only change needed to activate it —
+     no markup edits required. */
+  var BUSINESS_CREDENTIALS = {
+    usdot: "",           // e.g. "1234567" — leave "" until confirmed
+    nyAuthority: "",     // e.g. "T-123456" — leave "" until confirmed
+    insured: false        // set true only once commercial insurance is confirmed active
+  };
+
+  /* ---- Truck specifications (spec table placeholders) ----
+     Leave a field empty until the owner supplies a verified measurement. Empty fields render
+     "Available upon confirmation" automatically. */
+  var TRUCK_SPECS = {
+    interiorLength: "",
+    interiorWidth: "",
+    interiorHeight: "",
+    rearDoorOpening: "",
+    payloadCapacity: "",
+    gvwr: "",
+    palletCapacity: "",
+    liftgate: "",
+    dockHeight: "",
+    palletJack: "",
+    eTrack: "",
+    movingBlankets: "",
+    straps: ""
+  };
+
   document.addEventListener("DOMContentLoaded", function () {
     injectContactInfo();
+    injectBusinessCredentials();
+    injectTruckSpecs();
     setupNav();
     setupMobileMenu();
     setupReveal();
     setupFaq();
     setupRadioChips();
     setupForm();
+    setupBusinessForm();
     setupYear();
     setupEstimator();
     setupScrollProgress();
     setupHeroGlow();
   });
+
+  function injectBusinessCredentials() {
+    var usdotEls = document.querySelectorAll("[data-usdot-display]");
+    var authorityEls = document.querySelectorAll("[data-ny-authority-display]");
+    var insuranceEls = document.querySelectorAll("[data-insurance-display]");
+    usdotEls.forEach(function (el) {
+      if (BUSINESS_CREDENTIALS.usdot) {
+        el.textContent = BUSINESS_CREDENTIALS.usdot;
+        el.setAttribute("data-confirmed", "true");
+      }
+    });
+    authorityEls.forEach(function (el) {
+      if (BUSINESS_CREDENTIALS.nyAuthority) {
+        el.textContent = BUSINESS_CREDENTIALS.nyAuthority;
+        el.setAttribute("data-confirmed", "true");
+      }
+    });
+    insuranceEls.forEach(function (el) {
+      if (BUSINESS_CREDENTIALS.insured) {
+        el.textContent = "Confirmed";
+        el.setAttribute("data-confirmed", "true");
+      }
+    });
+  }
+
+  function injectTruckSpecs() {
+    document.querySelectorAll("[data-spec]").forEach(function (el) {
+      var key = el.getAttribute("data-spec");
+      var value = TRUCK_SPECS[key];
+      if (value) {
+        el.textContent = value;
+        el.setAttribute("data-confirmed", "true");
+      }
+    });
+  }
 
   function injectContactInfo() {
     document.querySelectorAll("[data-phone-display]").forEach(function (el) {
@@ -275,7 +342,12 @@
   function submitViaMailto(data, status, form) {
     var lines = [
       "New quote request — Heavy Hitter Transport",
-      "",
+      ""
+    ];
+    if (data.estimate_summary) {
+      lines.push("Instant estimate provided by customer:", data.estimate_summary, "");
+    }
+    lines.push(
       "Name: " + (data.full_name || ""),
       "Business: " + (data.business_name || "—"),
       "Phone: " + (data.phone || ""),
@@ -290,7 +362,7 @@
       "Delivery loading dock: " + (data.delivery_dock || "Not specified"),
       "Loading assistance needed: " + (data.loading_assistance || "Not specified"),
       "Special instructions: " + (data.special_instructions || "—")
-    ];
+    );
     var subject = encodeURIComponent("Quote Request — " + (data.full_name || "New Lead"));
     var body = encodeURIComponent(lines.join("\n"));
     var mailtoUrl = "mailto:" + EMAIL_ADDRESS + "?subject=" + subject + "&body=" + body;
@@ -301,15 +373,75 @@
 
   function showSuccess(status, form) {
     status.className = "form-status success";
-    status.textContent =
-      "Thanks for contacting Heavy Hitter Transport. Your request has been received and we'll contact you regarding availability and job details.";
+    status.innerHTML =
+      "<strong>Request Received.</strong> Heavy Hitter has received your job details. We will review the request and contact you to confirm availability and final pricing.";
     form.reset();
     document.querySelectorAll(".radio-chip.active").forEach(function (c) {
       c.classList.remove("active");
     });
+    var summaryField = document.getElementById("estimate-summary-field");
+    if (summaryField) summaryField.style.display = "none";
+  }
+
+  /* ---- Business account form (mailto fallback, same pattern as the quote form) ---- */
+  function setupBusinessForm() {
+    var form = document.getElementById("business-form");
+    if (!form) return;
+    var status = document.getElementById("business-form-status");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      status.className = "form-status";
+      status.textContent = "";
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      var data = collectFormData(form);
+      var lines = [
+        "New business account request — Heavy Hitter Transport",
+        "",
+        "Company: " + (data.company_name || ""),
+        "Contact: " + (data.contact_name || ""),
+        "Phone: " + (data.phone || ""),
+        "Email: " + (data.email || ""),
+        "Service needed: " + (data.service_needed || ""),
+        "Pickup area: " + (data.pickup_area || ""),
+        "Delivery area: " + (data.delivery_area || ""),
+        "Frequency: " + (data.frequency || ""),
+        "Estimated loads per week/month: " + (data.loads_estimate || "—"),
+        "Pallet count / load description: " + (data.load_description || "—")
+      ];
+      var subject = encodeURIComponent("Business Account Request — " + (data.company_name || "New Business Lead"));
+      var body = encodeURIComponent(lines.join("\n"));
+      window.location.href = "mailto:" + EMAIL_ADDRESS + "?subject=" + subject + "&body=" + body;
+
+      status.className = "form-status success";
+      status.innerHTML =
+        "<strong>Request Received.</strong> Heavy Hitter has received your business account request. We will review it and follow up to confirm scheduling and pricing.";
+      form.reset();
+    });
   }
 
   /* ---- Instant estimate calculator ---- */
+  var SERVICE_LABELS = {
+    moving: "Moving / Delivery (Box Truck + Crew)",
+    truckDriverOnly: "Truck & Driver Only (You Load It)",
+    courier: "Dedicated Local Delivery",
+    freightDockToDock: "Local Pallet & Dock Run",
+    freightHandLoad: "Pallet & Freight — Labor Assist"
+  };
+  var SERVICE_TO_JOB_TYPE = {
+    moving: "Furniture",
+    truckDriverOnly: "Other",
+    courier: "Other",
+    freightDockToDock: "Warehouse/Dock",
+    freightHandLoad: "Pallet/Freight"
+  };
+  var lastEstimate = null;
+
   function setupEstimator() {
     var btn = document.getElementById("est-calc-btn");
     var serviceEl = document.getElementById("est-service");
@@ -354,8 +486,68 @@
       };
 
       var result = calculateEstimate(service, zone, inputs);
+      lastEstimate = { service: service, zone: zone, inputs: inputs, result: result };
       renderEstimate(result);
     });
+
+    var requestBtn = document.getElementById("est-request-btn");
+    if (requestBtn) {
+      requestBtn.addEventListener("click", transferEstimateToQuoteForm);
+    }
+  }
+
+  /* Transfers the calculated estimate into the quote form so the customer never re-enters
+     service type, location, load size, miles, hours, stops or the calculated price. */
+  function transferEstimateToQuoteForm() {
+    if (!lastEstimate) return;
+    var e = lastEstimate;
+    var rangeText = e.result.high > e.result.low
+      ? "$" + Math.round(e.result.low).toLocaleString() + " – $" + Math.round(e.result.high).toLocaleString()
+      : "$" + Math.round(e.result.low).toLocaleString();
+
+    var summaryLines = [
+      "Service Type: " + (SERVICE_LABELS[e.service] || e.service),
+      "Location: " + (e.zone === "tristate" ? "Tri-State" : "New York City"),
+    ];
+    if (e.service === "moving") {
+      summaryLines.push("Load Size: " + (e.inputs.loadType === "partial" ? "Partial Load / Single Item" : "Full Truckload"));
+    }
+    if (e.service === "freightDockToDock" || e.service === "freightHandLoad") {
+      summaryLines.push("Pallets: " + e.inputs.pallets);
+    }
+    summaryLines.push("Estimated Miles: " + e.inputs.miles);
+    if (e.service === "moving" || e.service === "truckDriverOnly") {
+      summaryLines.push("Estimated Hours: " + e.inputs.hours);
+    }
+    summaryLines.push("Extra Stops: " + e.inputs.stops);
+    if (e.inputs.rush) summaryLines.push("Rush pickup window requested");
+    summaryLines.push("Calculated Estimate: " + rangeText + " (published rate structure, not a final price)");
+
+    var summaryField = document.getElementById("estimate-summary-field");
+    var summaryInput = document.getElementById("estimate_summary");
+    if (summaryField && summaryInput) {
+      summaryInput.value = summaryLines.join("\n");
+      summaryField.style.display = "";
+    }
+
+    var itemCount = document.getElementById("item_count");
+    if (itemCount && (e.service === "freightDockToDock" || e.service === "freightHandLoad") && e.inputs.pallets) {
+      itemCount.value = e.inputs.pallets + " pallets";
+    }
+
+    var jobTypeValue = SERVICE_TO_JOB_TYPE[e.service];
+    if (jobTypeValue) {
+      var radio = document.querySelector('input[name="job_type"][value="' + jobTypeValue + '"]');
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change"));
+      }
+    }
+
+    var quoteSection = document.getElementById("quote");
+    if (quoteSection) quoteSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    var fullName = document.getElementById("full_name");
+    if (fullName) window.setTimeout(function () { fullName.focus(); }, 450);
   }
 
   function calculateEstimate(service, zone, inputs) {
@@ -509,6 +701,10 @@
     box.innerHTML =
       '<div class="est-range">' + rangeText + "</div>" +
       '<div class="est-breakdown">' + rowsHtml + "</div>" +
-      '<p class="est-note">Estimate only, based on the published rate card. Tolls, special handling and unusual access are not included. Request a quote for the confirmed price.</p>';
+      '<p class="est-note">Estimate only, based on the published rate card. Tolls, special handling and unusual access are not included. Your final confirmed quote is issued after Heavy Hitter reviews the complete job details.</p>' +
+      '<button type="button" class="btn btn-gold btn-lg btn-block est-request-btn" id="est-request-btn">Request This Job</button>';
+
+    var requestBtn = document.getElementById("est-request-btn");
+    if (requestBtn) requestBtn.addEventListener("click", transferEstimateToQuoteForm);
   }
 })();
