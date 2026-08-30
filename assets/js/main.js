@@ -15,6 +15,19 @@
      serverless endpoint, etc). Leave empty to use the mailto fallback. */
   var FORM_ENDPOINT = "";
 
+  /* ---- Published rate card (must match the Pricing section on the page) ---- */
+  var RATES = {
+    fiveboro: {
+      full:    { flat: 850, includedHours: 4, includedMiles: 40, extraHourRate: 145, extraMileRate: 2.25 },
+      partial: { flat: 450, includedHours: 2, includedMiles: 20, extraHourRate: 125, extraMileRate: 2.25 }
+    },
+    tristate: {
+      base: 700, includedHours: 4, includedMiles: 20, extraMileRate: 3.00, fuelSurchargePct: 0.15
+    },
+    extraStop: 75,
+    waitingPer30Min: 50
+  };
+
   document.addEventListener("DOMContentLoaded", function () {
     injectContactInfo();
     setupNav();
@@ -24,6 +37,7 @@
     setupRadioChips();
     setupForm();
     setupYear();
+    setupEstimator();
   });
 
   function injectContactInfo() {
@@ -228,5 +242,95 @@
     document.querySelectorAll(".radio-chip.active").forEach(function (c) {
       c.classList.remove("active");
     });
+  }
+
+  /* ---- Instant estimate calculator ---- */
+  function setupEstimator() {
+    var btn = document.getElementById("est-calc-btn");
+    var zoneEl = document.getElementById("est-zone");
+    var loadField = document.getElementById("est-load-field");
+    if (!btn || !zoneEl) return;
+
+    function toggleLoadField() {
+      loadField.style.display = zoneEl.value === "tristate" ? "none" : "";
+    }
+    zoneEl.addEventListener("change", toggleLoadField);
+    toggleLoadField();
+
+    btn.addEventListener("click", function () {
+      var zone = zoneEl.value;
+      var loadType = document.getElementById("est-load").value;
+      var miles = parseFloat(document.getElementById("est-miles").value) || 0;
+      var hours = parseFloat(document.getElementById("est-hours").value) || 0;
+      var stops = parseInt(document.getElementById("est-stops").value, 10) || 0;
+
+      var result = calculateEstimate(zone, loadType, miles, hours, stops);
+      renderEstimate(result);
+    });
+  }
+
+  function calculateEstimate(zone, loadType, miles, hours, stops) {
+    var lines = [];
+    var low, high, base;
+
+    if (zone === "tristate") {
+      var t = RATES.tristate;
+      base = t.base;
+      lines.push({ label: "Base (includes " + t.includedHours + " hrs / " + t.includedMiles + " mi beyond NYC)", value: base });
+
+      var extraMiles = Math.max(0, miles - t.includedMiles);
+      var mileageCharge = extraMiles * t.extraMileRate;
+      if (extraMiles > 0) lines.push({ label: "Extra mileage (" + extraMiles + " mi \u00d7 $" + t.extraMileRate.toFixed(2) + ")", value: mileageCharge });
+
+      var fuelSurcharge = mileageCharge * t.fuelSurchargePct;
+      if (mileageCharge > 0) lines.push({ label: "Fuel surcharge (" + (t.fuelSurchargePct * 100).toFixed(0) + "% of mileage)", value: fuelSurcharge });
+
+      var subtotal = base + mileageCharge + fuelSurcharge;
+      var stopCharge = stops * RATES.extraStop;
+      if (stops > 0) lines.push({ label: stops + " extra stop(s) \u00d7 $" + RATES.extraStop, value: stopCharge });
+
+      var total = subtotal + stopCharge;
+      low = total;
+      high = total * 1.15; // tri-state is negotiable/quoted — show a realistic spread
+    } else {
+      var tier = RATES.fiveboro[loadType] || RATES.fiveboro.full;
+      base = tier.flat;
+      lines.push({ label: "Flat rate (up to " + tier.includedHours + " hrs / " + tier.includedMiles + " mi)", value: base });
+
+      var extraHours = Math.max(0, hours - tier.includedHours);
+      var timeCharge = extraHours * tier.extraHourRate;
+      if (extraHours > 0) lines.push({ label: extraHours + " extra hr(s) \u00d7 $" + tier.extraHourRate, value: timeCharge });
+
+      var extraMi = Math.max(0, miles - tier.includedMiles);
+      var mileCharge = extraMi * tier.extraMileRate;
+      if (extraMi > 0) lines.push({ label: extraMi + " extra mile(s) \u00d7 $" + tier.extraMileRate.toFixed(2), value: mileCharge });
+
+      var stopCharge2 = stops * RATES.extraStop;
+      if (stops > 0) lines.push({ label: stops + " extra stop(s) \u00d7 $" + RATES.extraStop, value: stopCharge2 });
+
+      var flatTotal = base + timeCharge + mileCharge + stopCharge2;
+      low = flatTotal;
+      high = flatTotal; // 5-borough tiers are flat/predictable once inputs are known
+    }
+
+    return { zone: zone, low: low, high: high, lines: lines };
+  }
+
+  function renderEstimate(result) {
+    var box = document.getElementById("est-result");
+    if (!box) return;
+
+    var rangeText = result.zone === "tristate"
+      ? "$" + Math.round(result.low).toLocaleString() + " \u2013 $" + Math.round(result.high).toLocaleString()
+      : "$" + Math.round(result.low).toLocaleString();
+
+    var rowsHtml = result.lines.map(function (line) {
+      return '<div class="row"><span>' + line.label + "</span><span>$" + Math.round(line.value).toLocaleString() + "</span></div>";
+    }).join("");
+
+    box.innerHTML =
+      '<div class="est-range">' + rangeText + "</div>" +
+      '<div class="est-breakdown">' + rowsHtml + "</div>" +
+      '<p class="est-note">Estimate only, based on the published rate card. Tolls, special handling and unusual access are not included. Request a quote for the confirmed price.</p>';
   }
 })();
