@@ -25,7 +25,35 @@
       base: 700, includedHours: 4, includedMiles: 20, extraMileRate: 3.00, fuelSurchargePct: 0.15
     },
     extraStop: 75,
-    waitingPer30Min: 50
+    waitingPer30Min: 50,
+    /* Courier: driver-only, single small item/package, rush-capable. No helper on the job,
+       so the crew-cost basis (and therefore the rate) is lower than the labor-included tiers. */
+    courier: {
+      flat: 175, includedHours: 1, includedMiles: 15, extraHourRate: 95, extraMileRate: 2.50,
+      rushFee: 50, tristateExtraMileRate: 3.00, fuelSurchargePct: 0.15
+    },
+    /* Freight & pallet — dock-to-dock: driver stays with the truck, receiver's own dock crew
+       (forklift/pallet jack) handles unloading. No helper on our side, so this is priced off the
+       driver+truck+fuel cost only — not the two-person labor rate. */
+    freightDockToDock: {
+      perPallet: 95, minPallets: 2, minCharge: 190, extraPalletRate: 80,
+      includedMiles: 25, extraMileRate: 2.75, waitFreeMin: 20, waitPer20Min: 40,
+      tristateFuelSurchargePct: 0.15
+    },
+    /* Freight & pallet — hand-load: no dock/forklift at pickup or drop-off, so our crew (driver +
+       helper) physically loads/unloads. Priced like the labor-included tiers. */
+    freightHandLoad: {
+      perPallet: 150, minPallets: 2, minCharge: 300, extraPalletRate: 115,
+      includedMiles: 25, extraMileRate: 3.00, waitFreeMin: 30, waitPer30Min: 50,
+      tristateFuelSurchargePct: 0.15
+    },
+    /* Truck + driver only — customer supplies their own loading/unloading crew; driver pulls up
+       and waits. Priced on an hourly basis (driver wage + truck cost + fuel + insurance/overhead),
+       with no labor line at all — the lowest tier on the card because there's no crew cost to cover. */
+    truckDriverOnly: {
+      hourlyRate: 115, minHours: 2, minCharge: 230, includedMilesPerHour: 10, extraMileRate: 2.00,
+      tristateFuelSurchargePct: 0.15
+    }
   };
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -284,31 +312,66 @@
   /* ---- Instant estimate calculator ---- */
   function setupEstimator() {
     var btn = document.getElementById("est-calc-btn");
+    var serviceEl = document.getElementById("est-service");
     var zoneEl = document.getElementById("est-zone");
-    var loadField = document.getElementById("est-load-field");
-    if (!btn || !zoneEl) return;
+    if (!btn || !serviceEl || !zoneEl) return;
 
-    function toggleLoadField() {
-      loadField.style.display = zoneEl.value === "tristate" ? "none" : "";
+    var loadField = document.getElementById("est-load-field");
+    var palletsField = document.getElementById("est-pallets-field");
+    var milesField = document.getElementById("est-miles-field");
+    var hoursField = document.getElementById("est-hours-field");
+    var stopsField = document.getElementById("est-stops-field");
+    var rushField = document.getElementById("est-rush-field");
+
+    function show(el, on) { if (el) el.style.display = on ? "" : "none"; }
+
+    function syncFields() {
+      var service = serviceEl.value;
+      var isFreight = service === "freightDockToDock" || service === "freightHandLoad";
+      show(loadField, service === "moving");
+      show(palletsField, isFreight);
+      show(hoursField, service === "moving" || service === "truckDriverOnly");
+      show(stopsField, service === "moving" || isFreight);
+      show(rushField, service === "courier");
+      // Tri-State load-size choice only matters for the moving service; miles always shown.
+      if (loadField) loadField.style.display = (service === "moving" && zoneEl.value !== "tristate") ? "" : "none";
     }
-    zoneEl.addEventListener("change", toggleLoadField);
-    toggleLoadField();
+
+    serviceEl.addEventListener("change", syncFields);
+    zoneEl.addEventListener("change", syncFields);
+    syncFields();
 
     btn.addEventListener("click", function () {
+      var service = serviceEl.value;
       var zone = zoneEl.value;
-      var loadType = document.getElementById("est-load").value;
-      var miles = parseFloat(document.getElementById("est-miles").value) || 0;
-      var hours = parseFloat(document.getElementById("est-hours").value) || 0;
-      var stops = parseInt(document.getElementById("est-stops").value, 10) || 0;
+      var inputs = {
+        loadType: document.getElementById("est-load").value,
+        miles: parseFloat(document.getElementById("est-miles").value) || 0,
+        hours: parseFloat(document.getElementById("est-hours").value) || 0,
+        stops: parseInt(document.getElementById("est-stops").value, 10) || 0,
+        pallets: parseInt(document.getElementById("est-pallets").value, 10) || 0,
+        rush: document.getElementById("est-rush").checked
+      };
 
-      var result = calculateEstimate(zone, loadType, miles, hours, stops);
+      var result = calculateEstimate(service, zone, inputs);
       renderEstimate(result);
     });
   }
 
-  function calculateEstimate(zone, loadType, miles, hours, stops) {
+  function calculateEstimate(service, zone, inputs) {
+    switch (service) {
+      case "courier": return calcCourier(zone, inputs);
+      case "freightDockToDock": return calcFreight(RATES.freightDockToDock, zone, inputs, "waitPer20Min", "waitFreeMin");
+      case "freightHandLoad": return calcFreight(RATES.freightHandLoad, zone, inputs, "waitPer30Min", "waitFreeMin");
+      case "truckDriverOnly": return calcTruckDriverOnly(zone, inputs);
+      default: return calcMoving(zone, inputs);
+    }
+  }
+
+  function calcMoving(zone, inputs) {
     var lines = [];
     var low, high, base;
+    var miles = inputs.miles, hours = inputs.hours, stops = inputs.stops;
 
     if (zone === "tristate") {
       var t = RATES.tristate;
@@ -330,7 +393,7 @@
       low = total;
       high = total * 1.15; // tri-state is negotiable/quoted — show a realistic spread
     } else {
-      var tier = RATES.fiveboro[loadType] || RATES.fiveboro.full;
+      var tier = RATES.fiveboro[inputs.loadType] || RATES.fiveboro.full;
       base = tier.flat;
       lines.push({ label: "Flat rate (up to " + tier.includedHours + " hrs / " + tier.includedMiles + " mi)", value: base });
 
@@ -353,11 +416,89 @@
     return { zone: zone, low: low, high: high, lines: lines };
   }
 
+  function calcCourier(zone, inputs) {
+    var c = RATES.courier;
+    var lines = [];
+    var base = c.flat;
+    lines.push({ label: "Flat rate (up to " + c.includedHours + " hr / " + c.includedMiles + " mi)", value: base });
+
+    var extraHours = Math.max(0, inputs.hours - c.includedHours);
+    var timeCharge = extraHours * c.extraHourRate;
+    if (extraHours > 0) lines.push({ label: extraHours + " extra hr(s) \u00d7 $" + c.extraHourRate, value: timeCharge });
+
+    var mileRate = zone === "tristate" ? c.tristateExtraMileRate : c.extraMileRate;
+    var extraMiles = Math.max(0, inputs.miles - c.includedMiles);
+    var mileCharge = extraMiles * mileRate;
+    if (extraMiles > 0) lines.push({ label: extraMiles + " extra mile(s) \u00d7 $" + mileRate.toFixed(2), value: mileCharge });
+
+    var fuelSurcharge = 0;
+    if (zone === "tristate") {
+      fuelSurcharge = mileCharge * c.fuelSurchargePct;
+      if (mileCharge > 0) lines.push({ label: "Fuel surcharge (" + (c.fuelSurchargePct * 100).toFixed(0) + "% of mileage, Tri-State)", value: fuelSurcharge });
+    }
+
+    var rushFee = inputs.rush ? c.rushFee : 0;
+    if (rushFee > 0) lines.push({ label: "Rush booking fee", value: rushFee });
+
+    var total = base + timeCharge + mileCharge + fuelSurcharge + rushFee;
+    return { zone: zone, low: total, high: zone === "tristate" ? total * 1.1 : total, lines: lines };
+  }
+
+  function calcFreight(rates, zone, inputs, waitKey, waitFreeKey) {
+    var lines = [];
+    var pallets = Math.max(inputs.pallets, rates.minPallets);
+    // Base = minCharge for the minimum, plus extraPalletRate for pallets beyond the minimum.
+    var extraPallets = Math.max(0, pallets - rates.minPallets);
+    var base = rates.minCharge;
+    lines.push({ label: rates.minPallets + "-pallet minimum (base charge)", value: base });
+
+    var extraPalletCharge = extraPallets * rates.extraPalletRate;
+    if (extraPallets > 0) lines.push({ label: extraPallets + " extra pallet(s) \u00d7 $" + rates.extraPalletRate, value: extraPalletCharge });
+
+    var extraMiles = Math.max(0, inputs.miles - rates.includedMiles);
+    var mileCharge = extraMiles * rates.extraMileRate;
+    if (extraMiles > 0) lines.push({ label: extraMiles + " extra mile(s) \u00d7 $" + rates.extraMileRate.toFixed(2), value: mileCharge });
+
+    var stopCharge = inputs.stops * RATES.extraStop;
+    if (inputs.stops > 0) lines.push({ label: inputs.stops + " extra stop(s) \u00d7 $" + RATES.extraStop, value: stopCharge });
+
+    var fuelSurcharge = 0;
+    if (zone === "tristate") {
+      fuelSurcharge = (extraPalletCharge + mileCharge) * rates.tristateFuelSurchargePct;
+      if (fuelSurcharge > 0) lines.push({ label: "Fuel surcharge (" + (rates.tristateFuelSurchargePct * 100).toFixed(0) + "% of pallet + mileage, Tri-State)", value: fuelSurcharge });
+    }
+
+    var total = base + extraPalletCharge + mileCharge + stopCharge + fuelSurcharge;
+    return { zone: zone, low: total, high: zone === "tristate" ? total * 1.1 : total, lines: lines };
+  }
+
+  function calcTruckDriverOnly(zone, inputs) {
+    var r = RATES.truckDriverOnly;
+    var lines = [];
+    var hours = Math.max(inputs.hours, r.minHours);
+    var base = hours * r.hourlyRate;
+    lines.push({ label: hours + " hr(s) \u00d7 $" + r.hourlyRate + "/hr (2-hr minimum applied)", value: base });
+
+    var includedMiles = hours * r.includedMilesPerHour;
+    var extraMiles = Math.max(0, inputs.miles - includedMiles);
+    var mileCharge = extraMiles * r.extraMileRate;
+    if (extraMiles > 0) lines.push({ label: extraMiles + " extra mile(s) \u00d7 $" + r.extraMileRate.toFixed(2) + " (beyond " + includedMiles + " mi included)", value: mileCharge });
+
+    var fuelSurcharge = 0;
+    if (zone === "tristate") {
+      fuelSurcharge = mileCharge * r.tristateFuelSurchargePct;
+      if (fuelSurcharge > 0) lines.push({ label: "Fuel surcharge (" + (r.tristateFuelSurchargePct * 100).toFixed(0) + "% of mileage, Tri-State)", value: fuelSurcharge });
+    }
+
+    var total = Math.max(base + mileCharge + fuelSurcharge, r.minCharge);
+    return { zone: zone, low: total, high: zone === "tristate" ? total * 1.1 : total, lines: lines };
+  }
+
   function renderEstimate(result) {
     var box = document.getElementById("est-result");
     if (!box) return;
 
-    var rangeText = result.zone === "tristate"
+    var rangeText = result.high > result.low
       ? "$" + Math.round(result.low).toLocaleString() + " \u2013 $" + Math.round(result.high).toLocaleString()
       : "$" + Math.round(result.low).toLocaleString();
 

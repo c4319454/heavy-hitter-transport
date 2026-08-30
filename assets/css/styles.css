@@ -587,6 +587,14 @@ h1, h2, h3, h4 {
 .extra-row .k { color: #dcdbd6; }
 .extra-row .v { color: var(--c-gold); font-family: var(--ff-display); font-weight: 500; }
 
+.pricing-subhead {
+  margin-top: 56px;
+  margin-bottom: 28px;
+  max-width: 760px;
+}
+.pricing-subhead h3 { font-size: 21px; margin-bottom: 10px; }
+.pricing-subhead p { color: var(--c-muted); font-size: 14.5px; line-height: 1.6; }
+
 /* ---------- Instant estimator ---------- */
 .estimator {
   margin-top: 46px;

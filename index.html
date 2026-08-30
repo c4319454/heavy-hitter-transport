@@ -196,6 +196,82 @@
         </div>
       </div>
 
+      <div class="pricing-subhead reveal">
+        <h3>Freight, Courier &amp; Pallet <span class="gold">&mdash; Different Job, Different Rate</span></h3>
+        <p>
+          Dock-to-dock freight needs no loading labor, so it's priced off the driver-and-truck cost
+          alone. Freight that has to be hand-carried in or out gets the labor-included rate. Courier
+          runs are driver-only and built for rush timing. Same rule as everything else on this page:
+          the number covers the job.
+        </p>
+      </div>
+
+      <div class="pricing-tiers reveal">
+        <div class="tier-card">
+          <div class="tier-head">
+            <h3>Courier &amp; Rush Delivery</h3>
+            <p>Small Package &bull; Driver Only</p>
+          </div>
+          <div class="tier-price"><sup>$</sup>175<span>flat</span></div>
+          <ul class="tier-list">
+            <li>Driver only &mdash; no helper (document, parcel, single small item)</li>
+            <li>Up to 1 hour / 15 miles included</li>
+            <li>Extra time: $95/hr</li>
+            <li>Extra mileage: $2.50/mile</li>
+            <li>Rush (tight pickup window): +$50</li>
+            <li>Tri-State: $3.00/mile beyond NYC + 15% fuel surcharge</li>
+          </ul>
+        </div>
+
+        <div class="tier-card">
+          <div class="tier-head">
+            <h3>Freight &amp; Pallet</h3>
+            <p>Dock-to-Dock &bull; Drop &amp; Go</p>
+          </div>
+          <div class="tier-price"><sup>$</sup>95<span>/ pallet</span></div>
+          <ul class="tier-list">
+            <li>Driver stays with the truck &mdash; your dock crew loads/unloads with forklift or pallet jack</li>
+            <li>2-pallet minimum &mdash; $190 minimum charge</li>
+            <li>Includes 25 miles &bull; extra pallets $80 each</li>
+            <li>Extra mileage: $2.75/mile</li>
+            <li>First 20 min free at each dock, then $40 / 20 min</li>
+            <li>Tri-State: +15% fuel surcharge</li>
+          </ul>
+        </div>
+
+        <div class="tier-card">
+          <div class="tier-head">
+            <h3>Freight &amp; Pallet</h3>
+            <p>Hand-Load &bull; Labor Included</p>
+          </div>
+          <div class="tier-price"><sup>$</sup>150<span>/ pallet</span></div>
+          <ul class="tier-list">
+            <li>Driver + helper &mdash; for pickups/drop-offs with no dock or forklift access</li>
+            <li>2-pallet minimum &mdash; $300 minimum charge</li>
+            <li>Includes 25 miles &bull; extra pallets $115 each</li>
+            <li>Extra mileage: $3.00/mile</li>
+            <li>First 30 min free at each stop, then $50 / 30 min</li>
+            <li>Tri-State: +15% fuel surcharge</li>
+          </ul>
+        </div>
+
+        <div class="tier-card">
+          <div class="tier-head">
+            <h3>Truck &amp; Driver Only</h3>
+            <p>You Load It &bull; We Drive It</p>
+          </div>
+          <div class="tier-price"><sup>$</sup>115<span>/ hr</span></div>
+          <ul class="tier-list">
+            <li>Driver + truck only &mdash; your crew loads and unloads, we wait</li>
+            <li>2-hour minimum &mdash; $230 minimum charge</li>
+            <li>Includes 10 miles of driving per booked hour</li>
+            <li>Extra mileage: $2.00/mile</li>
+            <li>Tolls passed through at cost</li>
+            <li>Tri-State: +15% fuel surcharge</li>
+          </ul>
+        </div>
+      </div>
+
       <div class="rate-extras reveal">
         <h3>Additional Charges <span class="gold">(Apply To Every Job)</span></h3>
         <div class="extras-grid">
@@ -215,6 +291,16 @@
         <div class="estimator-body">
           <div class="estimator-controls">
             <div class="form-field">
+              <label for="est-service">Service Type</label>
+              <select id="est-service">
+                <option value="moving">Moving / Delivery (Box Truck + Crew)</option>
+                <option value="truckDriverOnly">Truck &amp; Driver Only (You Load It)</option>
+                <option value="courier">Courier &amp; Rush Delivery</option>
+                <option value="freightDockToDock">Freight &amp; Pallet &mdash; Dock-to-Dock</option>
+                <option value="freightHandLoad">Freight &amp; Pallet &mdash; Hand-Load</option>
+              </select>
+            </div>
+            <div class="form-field">
               <label for="est-zone">Job Location</label>
               <select id="est-zone">
                 <option value="fiveboro">NYC &mdash; 5 Boroughs</option>
@@ -228,22 +314,29 @@
                 <option value="partial">Partial Load / Single Item</option>
               </select>
             </div>
-            <div class="form-field">
+            <div class="form-field" id="est-pallets-field" style="display:none;">
+              <label for="est-pallets">Number Of Pallets / Skids</label>
+              <input type="number" id="est-pallets" min="1" step="1" placeholder="e.g. 2" />
+            </div>
+            <div class="form-field" id="est-miles-field">
               <label for="est-miles">Estimated Total Driving Miles</label>
               <input type="number" id="est-miles" min="0" step="1" placeholder="e.g. 25" />
             </div>
-            <div class="form-field">
+            <div class="form-field" id="est-hours-field">
               <label for="est-hours">Estimated On-Site Hours</label>
               <input type="number" id="est-hours" min="0" step="0.5" placeholder="e.g. 3" />
             </div>
-            <div class="form-field">
+            <div class="form-field" id="est-stops-field">
               <label for="est-stops">Extra Stops (beyond pickup + delivery)</label>
               <input type="number" id="est-stops" min="0" step="1" value="0" />
+            </div>
+            <div class="form-field checkbox-field" id="est-rush-field" style="display:none;">
+              <label for="est-rush"><input type="checkbox" id="est-rush" /> Rush / tight pickup window</label>
             </div>
             <button type="button" class="btn btn-outline" id="est-calc-btn">Calculate Estimate</button>
           </div>
           <div class="estimator-result" id="est-result">
-            <p class="est-placeholder">Fill in the job details and calculate to see an estimate range.</p>
+            <p class="est-placeholder">Pick a service type and fill in the job details to see an estimate range.</p>
           </div>
         </div>
         <p class="disclosure">
