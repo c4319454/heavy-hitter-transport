@@ -100,7 +100,23 @@
     setupEstimator();
     setupScrollProgress();
     setupHeroGlow();
+    setupLegalLinks();
   });
+
+  /* Terms of Service / Privacy Policy have no published document yet — rather than a dead
+     "#" link, clicking either opens a pre-filled email requesting that document. Honest
+     placeholder behavior, consistent with the rest of the site's no-fake-endpoint rule. */
+  function setupLegalLinks() {
+    document.querySelectorAll("a[data-legal-link]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        var doc = el.getAttribute("data-legal-link") === "privacy" ? "Privacy Policy" : "Terms of Service";
+        var subject = encodeURIComponent(doc + " Request — Heavy Hitter Transport");
+        var body = encodeURIComponent("Please send me Heavy Hitter Transport LLC's " + doc + ".");
+        window.location.href = "mailto:" + EMAIL_ADDRESS + "?subject=" + subject + "&body=" + body;
+      });
+    });
+  }
 
   function injectBusinessCredentials() {
     var usdotEls = document.querySelectorAll("[data-usdot-display]");
