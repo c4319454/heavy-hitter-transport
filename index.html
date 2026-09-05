@@ -147,18 +147,15 @@
         <span>Commercial Transportation</span>
         <span>Proof Of Delivery Available</span>
       </div>
-      <!-- HIDDEN FOR NOW: credential chips (USDOT / NY Operating Authority / Insurance) are
-           still being verified/obtained. Kept in the code so this can be turned back on with
-           a single uncomment once verification comes through — do not delete.
+      <!-- Credential chips (USDOT / NY Operating Authority / Insurance). Populated from
+           BUSINESS_CREDENTIALS in assets/js/main.js. Never invent numbers here or display
+           "licensed"/"authorized" without confirmed data — an empty field still renders
+           "Pending Verification". -->
       <div class="trust-pending reveal" id="trust-pending" aria-label="Carrier credentials, pending confirmation">
-        <!- Placeholders only — populated from BUSINESS_CREDENTIALS in assets/js/main.js once
-             the owner supplies confirmed USDOT / NY authority / insurance information. Never
-             invent numbers here or display "licensed"/"authorized" without confirmed data. ->
         <div class="pending-chip"><span class="pending-k">USDOT #</span><span class="pending-v" data-usdot-display>Pending Verification</span></div>
         <div class="pending-chip"><span class="pending-k">NY Operating Authority #</span><span class="pending-v" data-ny-authority-display>Pending Verification</span></div>
         <div class="pending-chip"><span class="pending-k">Commercially Insured</span><span class="pending-v" data-insurance-display>Confirmation Pending</span></div>
       </div>
-      -->
     </div>
   </section>
 
@@ -763,11 +760,12 @@
         <div class="biz-row"><div class="k">Service Type</div><div class="v">Commercial Transportation, With Residential Available</div></div>
         <div class="biz-row"><div class="k">Cargo</div><div class="v">General legal non-hazardous freight and property</div></div>
         <div class="biz-row"><div class="k">Carrier Type</div><div class="v">Direct carrier &mdash; not a broker</div></div>
+        <div class="biz-row"><div class="k">USDOT #</div><div class="v">6414188</div></div>
       </div>
 
       <p class="biz-note">
-        Heavy Hitter Transport LLC does not publicly display its EIN or personal addresses. USDOT number, New York
-        operating authority information, and commercial insurance information will be published here once confirmed.
+        Heavy Hitter Transport LLC does not publicly display its EIN or personal addresses. New York
+        operating authority information and commercial insurance information will be published here once confirmed.
       </p>
     </div>
   </section>
@@ -1089,14 +1087,25 @@
       <div class="section-head center reveal">
         <p class="eyebrow">On The Road</p>
         <h2>On The Road With <span class="gold">Heavy Hitter.</span></h2>
-        <p>Real job photos will be added here as they're taken. These are placeholders only — not stock or customer photos presented as ours.</p>
+        <p>Real jobs, real truck. These are actual Heavy Hitter Transport photos — not stock or customer images presented as ours. More are added here as they're taken.</p>
       </div>
+      <!-- To add a new photo: drop the processed JPEG in assets/images/, then add one
+           .gallery-item block below (img + gallery-caption). Keep gallery-grid's column
+           count in assets/css/styles.css (.gallery-grid) matching the total item count
+           for an even row, or let the responsive breakpoints reflow it. -->
       <div class="gallery-grid reveal">
-        <div class="gallery-placeholder"><span>Pallet Delivery</span></div>
-        <div class="gallery-placeholder"><span>Warehouse Pickup</span></div>
-        <div class="gallery-placeholder"><span>Furniture Transport</span></div>
-        <div class="gallery-placeholder"><span>Commercial Load</span></div>
-        <div class="gallery-placeholder"><span>Dock Delivery</span></div>
+        <figure class="gallery-item">
+          <img src="assets/images/gallery-cargo-secured.jpg" alt="Inside Heavy Hitter's box truck with cargo strapped and secured with e-track ratchet straps" width="820" height="615" loading="lazy" />
+          <figcaption class="gallery-caption">Load Secured For Transport</figcaption>
+        </figure>
+        <figure class="gallery-item">
+          <img src="assets/images/gallery-full-load.jpg" alt="Heavy Hitter's box truck loaded floor to ceiling with palletized commercial freight" width="820" height="615" loading="lazy" />
+          <figcaption class="gallery-caption">Full Truck, Full Job</figcaption>
+        </figure>
+        <figure class="gallery-item">
+          <img src="assets/images/gallery-dock-delivery.jpg" alt="Palletized boxes staged on a pallet jack at a loading dock for delivery" width="820" height="615" loading="lazy" />
+          <figcaption class="gallery-caption">Dock-To-Dock Delivery</figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -1110,15 +1119,13 @@
       <div class="footer-brand">
         <strong style="font-family:var(--ff-display); text-transform:uppercase; letter-spacing:.04em; font-size:18px;">Heavy Hitter Transport LLC</strong>
         <p>New York City Box Truck Transportation<br />Freight &bull; Pallets &bull; Commercial Delivery</p>
-        <!-- HIDDEN FOR NOW: same credential placeholders as the trust strip, still being
-             verified. Kept in the code — see BUSINESS_CREDENTIALS in assets/js/main.js —
-             uncomment once confirmed. Do not delete.
+        <!-- Same USDOT / NY authority / insurance chips as the trust strip, populated from
+             BUSINESS_CREDENTIALS in assets/js/main.js. -->
         <p class="footer-credentials">
           USDOT #: <span data-usdot-display>Pending Verification</span><br />
           NY Operating Authority #: <span data-ny-authority-display>Pending Verification</span><br />
           Commercial Insurance: <span data-insurance-display>Confirmation Pending</span>
         </p>
-        -->
       </div>
 
       <div class="footer-cols">
