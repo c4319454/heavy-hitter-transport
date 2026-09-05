@@ -63,7 +63,7 @@
   var BUSINESS_CREDENTIALS = {
     usdot: "6414188",    // confirmed by owner 2026-09-04
     nyAuthority: "",     // e.g. "T-123456" — leave "" until confirmed
-    insured: false        // set true only once commercial insurance is confirmed active
+    insured: "$25,000 Commercial General Liability Coverage"  // confirmed by owner 2026-09-05 (coverage amount only; no carrier/policy details disclosed)
   };
 
   /* ---- Truck specifications (spec table placeholders) ----
@@ -120,7 +120,7 @@
     });
     insuranceEls.forEach(function (el) {
       if (BUSINESS_CREDENTIALS.insured) {
-        el.textContent = "Confirmed";
+        el.textContent = BUSINESS_CREDENTIALS.insured;
         el.setAttribute("data-confirmed", "true");
       }
     });
