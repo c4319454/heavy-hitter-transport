@@ -135,6 +135,22 @@
     </div>
   </section>
 
+  <!-- ============ NETWORK VISUAL ============ -->
+  <!-- Moving node/grid animation: a canvas-drawn logistics-network effect (drifting nodes,
+       connecting lines, energy pulses) in the site's gold/gunmetal palette. Purely decorative;
+       no business data. Respects prefers-reduced-motion via JS (see setupNetworkCanvas). -->
+  <section class="network-section" aria-hidden="false">
+    <canvas id="network-canvas" class="network-canvas" aria-hidden="true"></canvas>
+    <div class="container network-inner">
+      <p class="network-eyebrow reveal">Dispatch Network &mdash; Five Boroughs &amp; Beyond</p>
+      <h2 class="reveal">One Truck. One Network.<br />Every Job Routed Direct.</h2>
+      <p class="network-sub reveal">
+        Real-time dispatch across NYC and the Tri-State &mdash; no broker relay, no middle layer.
+        Direct carrier, direct routing, direct accountability.
+      </p>
+    </div>
+  </section>
+
   <!-- ============ TRUST STRIP ============ -->
   <section class="trust-section">
     <div class="container">
@@ -1176,5 +1192,6 @@
 </div>
 
 <script src="assets/js/main.js"></script>
+<script src="assets/js/network-canvas.js"></script>
 </body>
 </html>

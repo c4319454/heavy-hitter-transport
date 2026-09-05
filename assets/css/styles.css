@@ -34,6 +34,12 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-bg: rgba(255, 255, 255, 0.045);
   --glass-border: rgba(255, 255, 255, 0.09);
+
+  /* 2030 accent layer — cool chrome highlight used only in gradients/glows,
+     never as a flat fill, so the palette still reads gold/gunmetal at rest */
+  --c-chrome: #dfe6ee;
+  --holo-gradient: conic-gradient(from 0deg, var(--c-gold-dim), var(--c-gold-light), var(--c-chrome), var(--c-gold), var(--c-gold-dim));
+  --shimmer-gradient: linear-gradient(100deg, var(--c-white) 0%, var(--c-gold-light) 22%, var(--c-chrome) 38%, var(--c-white) 52%, var(--c-gold) 70%, var(--c-white) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -155,12 +161,14 @@ h1, h2, h3, h4 {
   padding: 16px 30px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
-  transition: transform 0.18s var(--ease-out), box-shadow 0.18s ease, background 0.18s ease, border-color .18s ease, color .18s ease;
+  transition: transform 0.18s var(--ease-out), box-shadow 0.18s ease, background 0.18s ease, border-color .18s ease, color .18s ease, clip-path .18s ease;
   white-space: nowrap;
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
 }
+.btn:hover { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 0); }
 .btn::after {
   content: "";
   position: absolute;
@@ -339,6 +347,19 @@ h1, h2, h3, h4 {
   opacity: 0.5;
   pointer-events: none;
 }
+.hero-scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 140px;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent, rgba(227,194,101,0.10) 45%, rgba(227,194,101,0.03) 60%, transparent);
+  pointer-events: none;
+  animation: scanDrift 9s ease-in-out infinite;
+}
+@keyframes scanDrift {
+  0%, 100% { top: -10%; opacity: 0.6; }
+  50% { top: 85%; opacity: 0.9; }
+}
 .hero-glow {
   position: absolute;
   inset: 0;
@@ -371,6 +392,19 @@ h1, h2, h3, h4 {
   font-size: clamp(38px, 6.4vw, 74px);
   letter-spacing: 0.01em;
   margin-bottom: 20px;
+}
+.hero h1 .shimmer {
+  background: var(--shimmer-gradient);
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerSweep 6s linear infinite;
+}
+@keyframes shimmerSweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: -300% 50%; }
 }
 .hero .subhead {
   font-family: var(--ff-display);
@@ -409,6 +443,57 @@ h1, h2, h3, h4 {
   border-radius: 50%;
   background: var(--c-gold);
   flex-shrink: 0;
+}
+
+/* ---------- Network visual (moving grid/node animation) ---------- */
+.network-section {
+  position: relative;
+  overflow: hidden;
+  padding: 90px 0;
+  background: linear-gradient(180deg, var(--c-black) 0%, var(--c-charcoal) 55%, var(--c-black) 100%);
+  border-top: 1px solid var(--c-border);
+  border-bottom: 1px solid var(--c-border);
+}
+.network-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.85;
+}
+.network-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+.network-eyebrow {
+  font-family: var(--ff-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 13px;
+  color: var(--c-gold-light);
+  margin-bottom: 16px;
+}
+.network-section h2 {
+  font-family: var(--ff-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: clamp(26px, 4vw, 42px);
+  color: var(--c-white);
+  margin-bottom: 18px;
+  text-shadow: 0 0 30px rgba(200, 161, 59, 0.25);
+}
+.network-sub {
+  color: var(--c-muted);
+  font-size: 16px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  .network-section { padding: 64px 0; }
 }
 
 /* ---------- Trust section (below hero) ---------- */
