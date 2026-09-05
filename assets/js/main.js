@@ -61,7 +61,7 @@
      a number here. Filling one in and redeploying is the only change needed to activate it —
      no markup edits required. */
   var BUSINESS_CREDENTIALS = {
-    usdot: "",           // e.g. "1234567" — leave "" until confirmed
+    usdot: "6414188",    // confirmed by owner 2026-09-04
     nyAuthority: "",     // e.g. "T-123456" — leave "" until confirmed
     insured: false        // set true only once commercial insurance is confirmed active
   };
