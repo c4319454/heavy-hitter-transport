@@ -554,22 +554,22 @@
           <div class="stat-label">Box Truck</div>
 
           <div class="spec-table" id="truck-spec-table" aria-label="Truck specifications">
-            <!-- Populated by TRUCK_SPECS in assets/js/main.js. Any field left blank there renders
-                 "Available upon confirmation" — never invented. Fill in verified measurements in
-                 that object to activate a spec here without touching this markup. -->
-            <div class="spec-row"><span class="k">Interior Length</span><span class="v" data-spec="interiorLength">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Interior Width</span><span class="v" data-spec="interiorWidth">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Interior Height</span><span class="v" data-spec="interiorHeight">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Rear-Door Opening</span><span class="v" data-spec="rearDoorOpening">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Payload Capacity</span><span class="v" data-spec="payloadCapacity">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">GVWR</span><span class="v" data-spec="gvwr">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Estimated Pallet Capacity</span><span class="v" data-spec="palletCapacity">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Liftgate</span><span class="v" data-spec="liftgate">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Dock Height Capability</span><span class="v" data-spec="dockHeight">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Pallet Jack</span><span class="v" data-spec="palletJack">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">E-Track / Cargo Securement</span><span class="v" data-spec="eTrack">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Moving Blankets</span><span class="v" data-spec="movingBlankets">Available upon confirmation</span></div>
-            <div class="spec-row"><span class="k">Straps</span><span class="v" data-spec="straps">Available upon confirmation</span></div>
+            <!-- Typical/published specs for the 22-ft box truck class (see assets/js/main.js
+                 sourcing note), not Heavy Hitter's own certified measurements. TRUCK_SPECS in
+                 assets/js/main.js overrides any field with this exact unit's confirmed
+                 measurement once available — never invented for this specific truck. -->
+            <div class="spec-row"><span class="k">Interior Length</span><span class="v" data-spec="interiorLength">Up to 21'11"</span></div>
+            <div class="spec-row"><span class="k">Interior Width</span><span class="v" data-spec="interiorWidth">Up to 8'1"</span></div>
+            <div class="spec-row"><span class="k">Interior Height</span><span class="v" data-spec="interiorHeight">Up to 8'1"</span></div>
+            <div class="spec-row"><span class="k">Cargo Volume</span><span class="v" data-spec="cargoVolume">Up to ~1,200 cu. ft.</span></div>
+            <div class="spec-row"><span class="k">Payload Capacity</span><span class="v" data-spec="payloadCapacity">Up to 10,000 lbs</span></div>
+            <div class="spec-row"><span class="k">GVWR</span><span class="v" data-spec="gvwr">Up to 26,000 lbs (Non-CDL)</span></div>
+          </div>
+          <p class="truck-note">Figures above are typical for this 22-ft box truck class and vary by make, model, and year — exact measurements for our unit confirmed at booking.</p>
+
+          <div class="equip-note reveal">
+            <strong>Equipped for the job</strong>
+            Liftgate, pallet jack, E-track cargo securement, moving blankets, and straps are confirmed for your specific load when you book — tell us what you're moving and we'll make sure the truck is set up for it.
           </div>
 
           <ul class="feature-list">

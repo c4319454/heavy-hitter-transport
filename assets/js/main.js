@@ -66,23 +66,19 @@
     insured: "$25,000 Commercial General Liability Coverage"  // confirmed by owner 2026-09-05 (coverage amount only; no carrier/policy details disclosed)
   };
 
-  /* ---- Truck specifications (spec table placeholders) ----
-     Leave a field empty until the owner supplies a verified measurement. Empty fields render
-     "Available upon confirmation" automatically. */
+  /* ---- Truck specifications (spec table overrides) ----
+     The markup ships with typical/published specs for this 22-ft box truck class (sourced from
+     commercial box-truck rental spec sheets), never Heavy Hitter's own certified measurements.
+     Fill a field here with the owner's confirmed exact measurement for this unit to override that
+     typical value and switch the row's styling to "confirmed" — leave "" to keep showing the
+     typical figure. Never invent a number here. */
   var TRUCK_SPECS = {
     interiorLength: "",
     interiorWidth: "",
     interiorHeight: "",
-    rearDoorOpening: "",
+    cargoVolume: "",
     payloadCapacity: "",
-    gvwr: "",
-    palletCapacity: "",
-    liftgate: "",
-    dockHeight: "",
-    palletJack: "",
-    eTrack: "",
-    movingBlankets: "",
-    straps: ""
+    gvwr: ""
   };
 
   document.addEventListener("DOMContentLoaded", function () {
