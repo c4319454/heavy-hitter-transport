@@ -963,6 +963,26 @@ h1, h2, h3, h4 {
 .spec-row .v { color: var(--c-muted); font-style: italic; text-align: right; }
 .spec-row .v[data-confirmed="true"] { color: var(--c-gold-light); font-style: normal; font-family: var(--ff-display); }
 
+.equip-note {
+  margin: 4px 0 22px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-gold);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  color: #cfcdc6;
+  line-height: 1.55;
+}
+.equip-note strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: var(--c-gold-light);
+  font-family: var(--ff-display);
+  font-weight: 500;
+}
+
 /* ---------- Who we serve ---------- */
 .serve-grid {
   display: grid;
