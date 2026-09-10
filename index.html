@@ -167,10 +167,8 @@
            BUSINESS_CREDENTIALS in assets/js/main.js. Never invent numbers here or display
            "licensed"/"authorized" without confirmed data — an empty field still renders
            "Pending Verification". -->
-      <div class="trust-pending reveal" id="trust-pending" aria-label="Carrier credentials, pending confirmation">
+      <div class="trust-pending reveal" id="trust-pending" aria-label="Carrier credentials">
         <div class="pending-chip"><span class="pending-k">USDOT #</span><span class="pending-v" data-usdot-display>Pending Verification</span></div>
-        <div class="pending-chip"><span class="pending-k">NY Operating Authority #</span><span class="pending-v" data-ny-authority-display>Pending Verification</span></div>
-        <div class="pending-chip"><span class="pending-k">Commercially Insured</span><span class="pending-v" data-insurance-display>Confirmation Pending</span></div>
       </div>
     </div>
   </section>
@@ -1138,9 +1136,7 @@
         <!-- Same USDOT / NY authority / insurance chips as the trust strip, populated from
              BUSINESS_CREDENTIALS in assets/js/main.js. -->
         <p class="footer-credentials">
-          USDOT #: <span data-usdot-display>Pending Verification</span><br />
-          NY Operating Authority #: <span data-ny-authority-display>Pending Verification</span><br />
-          Commercial Insurance: <span data-insurance-display>Confirmation Pending</span>
+          USDOT #: <span data-usdot-display>Pending Verification</span>
         </p>
       </div>
 
