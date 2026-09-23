@@ -1304,6 +1304,59 @@ h1, h2, h3, h4 {
   color: #ffb4b4;
 }
 
+/* ---------- Partner / subcontractor program ---------- */
+.partner-equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin-top: 44px;
+}
+@media (max-width: 700px) { .partner-equipment-grid { grid-template-columns: 1fr; } }
+.partner-equipment-card {
+  padding: 30px 26px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  background: var(--c-charcoal);
+}
+.partner-equipment-card h3 { font-size: 17px; margin-bottom: 10px; color: var(--c-gold-light); }
+.partner-equipment-card p { font-size: 14px; color: var(--c-muted); }
+
+.partner-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin-top: 22px;
+}
+@media (max-width: 700px) { .partner-info-grid { grid-template-columns: 1fr; } }
+.partner-info-block {
+  padding: 28px 26px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.02);
+}
+.partner-info-block h3 { font-size: 15.5px; margin-bottom: 12px; letter-spacing: 0.02em; }
+.partner-info-block p { font-size: 14px; color: var(--c-muted); margin-bottom: 10px; }
+.partner-info-block p:last-child { margin-bottom: 0; }
+.partner-info-block ul { display: grid; gap: 10px; }
+.partner-info-block ul li {
+  font-size: 13.5px;
+  color: var(--c-muted);
+  display: flex;
+  gap: 8px;
+}
+.partner-info-block ul li::before { content: "•"; color: var(--c-gold); }
+.partner-info-block ul li strong { color: #e7e6e1; }
+
+.partner-lead {
+  max-width: 720px;
+  margin: 40px auto 30px;
+  text-align: center;
+}
+.partner-lead p { color: var(--c-muted); font-size: 15px; margin-bottom: 22px; }
+.partner-lead .btn-row { justify-content: center; }
+
+.partner-form { max-width: 900px; margin: 0 auto; }
+
 /* ---------- Call CTA ---------- */
 .call-cta {
   background: linear-gradient(160deg, var(--c-gunmetal-2), var(--c-black) 70%);
