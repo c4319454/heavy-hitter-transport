@@ -92,6 +92,7 @@
     setupRadioChips();
     setupForm();
     setupBusinessForm();
+    setupPartnerForm();
     setupYear();
     setupEstimator();
     setupScrollProgress();
@@ -433,6 +434,49 @@
       status.className = "form-status success";
       status.innerHTML =
         "<strong>Request Received.</strong> Heavy Hitter has received your business account request. We will review it and follow up to confirm scheduling and pricing.";
+      form.reset();
+    });
+  }
+
+  /* ---- Subcontractor / owner-operator partner application form
+     (mailto fallback, same pattern as the quote and business forms) ---- */
+  function setupPartnerForm() {
+    var form = document.getElementById("partner-form");
+    if (!form) return;
+    var status = document.getElementById("partner-form-status");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      status.className = "form-status";
+      status.textContent = "";
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      var data = collectFormData(form);
+      var lines = [
+        "New subcontractor / owner-operator application — Heavy Hitter Transport",
+        "",
+        "Name: " + (data.full_name || ""),
+        "Company/Carrier: " + (data.company_name || "—"),
+        "Phone: " + (data.phone || ""),
+        "Email: " + (data.email || ""),
+        "Equipment type: " + (data.equipment_type || ""),
+        "MC operating authority number: " + (data.mc_number || "None provided"),
+        "Current commercial insurance: " + (data.insurance_status || ""),
+        "Coverage area / lanes: " + (data.coverage_area || ""),
+        "Years operating this equipment: " + (data.experience || "—"),
+        "Notes: " + (data.notes || "—")
+      ];
+      var subject = encodeURIComponent("Partner Application — " + (data.full_name || "New Operator"));
+      var body = encodeURIComponent(lines.join("\n"));
+      window.location.href = "mailto:" + EMAIL_ADDRESS + "?subject=" + subject + "&body=" + body;
+
+      status.className = "form-status success";
+      status.innerHTML =
+        "<strong>Application Received.</strong> Heavy Hitter has received your partner application. We will review your equipment, coverage area, and authority, then follow up to confirm assignment terms.";
       form.reset();
     });
   }
