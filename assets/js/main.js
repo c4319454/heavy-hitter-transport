@@ -98,7 +98,41 @@
     setupScrollProgress();
     setupHeroGlow();
     setupLegalLinks();
+    setupEngineSound();
   });
+
+  /* ---- Landing engine-startup sound (staged, inert until ENGINE_SOUND_SRC is set) ----
+     Browsers block sound-with-audio from firing with zero user interaction, so this plays on
+     the visitor's FIRST interaction after page load (click/tap/scroll/keypress) — functionally
+     "plays once as the page opens" for any real visitor. Fires exactly once per page load; a
+     fresh load (refresh or navigating to another page) resets the in-memory flag below, so it
+     can play again on that new load. Leave ENGINE_SOUND_SRC empty to keep this fully inert —
+     filling it in and redeploying is the only change needed to activate it, no markup edits. */
+  var ENGINE_SOUND_SRC = "assets/audio/engine-start.mp3"; // owner-approved: Pixabay "Big Truck engine" (freesound_community), trimmed to ~5s
+  var ENGINE_SOUND_VOLUME = 0.55;
+
+  function setupEngineSound() {
+    if (!ENGINE_SOUND_SRC) return; // inert: no file chosen/approved yet
+    var played = false;
+    var audio = new Audio(ENGINE_SOUND_SRC);
+    audio.volume = ENGINE_SOUND_VOLUME;
+    audio.preload = "auto";
+
+    function playOnce() {
+      if (played) return;
+      played = true;
+      audio.play().catch(function () { /* ignore — a blocked/failed play is not fatal */ });
+      removeListeners();
+    }
+    function removeListeners() {
+      ["pointerdown", "touchstart", "keydown", "scroll"].forEach(function (evt) {
+        window.removeEventListener(evt, playOnce, true);
+      });
+    }
+    ["pointerdown", "touchstart", "keydown", "scroll"].forEach(function (evt) {
+      window.addEventListener(evt, playOnce, { capture: true, passive: true, once: true });
+    });
+  }
 
   /* Terms of Service / Privacy Policy have no published document yet — rather than a dead
      "#" link, clicking either opens a pre-filled email requesting that document. Honest
