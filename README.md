@@ -126,6 +126,20 @@ To wire up a real backend without writing server code, pick one of:
 After setting `FORM_ENDPOINT`, test the form once submitted data actually
 reaches wherever you expect it before relying on it for real leads.
 
+## 6b. Subcontractor / owner-operator partner program (`#partner`)
+
+A separate section/application from the customer quote flow, for tractor-trailer
+and box truck (22'-35') operators who want assigned work under Heavy Hitter.
+Deliberately has **no public rate table** — pay is confirmed privately per
+assignment because it varies by lane, distance, demand, and day-of conditions.
+If that changes, don't add fixed public numbers back without re-checking they
+still guarantee Heavy Hitter's minimum margin after subcontractor pay and other
+job costs.
+
+The form (`#partner-form`, handled in `assets/js/main.js` via `setupPartnerForm`)
+uses the same `mailto:` fallback pattern as the quote and business-account forms
+— no fake backend.
+
 ## 7. Publish / update on GitHub Pages
 
 This repo already has GitHub Pages enabled, serving from the `main` branch,
