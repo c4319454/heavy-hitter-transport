@@ -1253,6 +1253,33 @@
         <h2>Customer Reviews <span class="gold">Coming Soon.</span></h2>
         <p>We're collecting feedback from completed jobs and will publish it here as it comes in.</p>
       </div>
+
+      <form class="quote-form reveal review-form" id="review-form" novalidate>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="review_name">Your Name</label>
+            <input type="text" id="review_name" name="name" required />
+          </div>
+          <div class="form-field">
+            <label for="review_rating">Rating</label>
+            <select id="review_rating" name="rating" required>
+              <option value="">Select a rating</option>
+              <option value="5 stars">5 Stars &mdash; Excellent</option>
+              <option value="4 stars">4 Stars &mdash; Good</option>
+              <option value="3 stars">3 Stars &mdash; Average</option>
+              <option value="2 stars">2 Stars &mdash; Below Average</option>
+              <option value="1 star">1 Star &mdash; Poor</option>
+            </select>
+          </div>
+          <div class="form-field form-field-full">
+            <label for="review_text">Your Review</label>
+            <textarea id="review_text" name="review_text" rows="4" required placeholder="Tell us about your job with Heavy Hitter Transport."></textarea>
+          </div>
+        </div>
+        <p class="tier-note">Submitted reviews are sent to Heavy Hitter for approval before they're published on this page &mdash; nothing appears automatically.</p>
+        <button type="submit" class="btn btn-gold btn-lg">Submit Review</button>
+        <div class="form-status" id="review-form-status" role="status" aria-live="polite"></div>
+      </form>
     </div>
   </section>
 
