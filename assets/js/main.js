@@ -99,7 +99,62 @@
     setupHeroGlow();
     setupLegalLinks();
     setupEngineSound();
+    setupTiltCards();
+    setupHeroParallax();
   });
+
+  /* ---- 2026-style 3D depth: pointer-driven tilt on service/tier/partner cards ----
+     Desktop/hover-capable pointers only; skipped entirely on touch and when the visitor
+     has requested reduced motion. Uses inline transform (always wins over the CSS hover
+     rule) so the tilt tracks the cursor, then clears back to the CSS default on leave. */
+  function setupTiltCards() {
+    if (!window.matchMedia || !window.matchMedia("(hover: hover)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var cards = document.querySelectorAll(".tier-card, .service-card, .partner-equipment-card");
+    cards.forEach(function (card) {
+      var raf = null;
+      card.addEventListener("pointermove", function (e) {
+        var rect = card.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width;
+        var py = (e.clientY - rect.top) / rect.height;
+        var rx = (0.5 - py) * 9;
+        var ry = (px - 0.5) * 11;
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(function () {
+          card.style.transform =
+            "perspective(900px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) +
+            "deg) translateY(-4px) translateZ(12px)";
+        });
+      }, { passive: true });
+      card.addEventListener("pointerleave", function () {
+        if (raf) cancelAnimationFrame(raf);
+        card.style.transform = "";
+      }, { passive: true });
+    });
+  }
+
+  /* ---- 2026-style 3D depth: hero background/grid parallax on scroll ----
+     Cheap (one rect read + two transforms per animation frame, rAF-throttled), and
+     fully skipped for reduced-motion visitors. */
+  function setupHeroParallax() {
+    var hero = document.querySelector(".hero");
+    var bgImg = document.querySelector(".hero-bg img");
+    var grid = document.querySelector(".hero-grid-overlay");
+    if (!hero || (!bgImg && !grid)) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var ticking = false;
+    function update() {
+      var rect = hero.getBoundingClientRect();
+      var progress = Math.min(1, Math.max(0, -rect.top / (rect.height || 1)));
+      if (bgImg) bgImg.style.transform = "scale(1.08) translateY(" + (progress * 34) + "px)";
+      if (grid) grid.style.transform = "translateY(" + (progress * 60) + "px)";
+      ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
+  }
 
   /* ---- Landing engine-startup sound (staged, inert until ENGINE_SOUND_SRC is set) ----
      Browsers block sound-with-audio from firing with zero user interaction, so this plays on
