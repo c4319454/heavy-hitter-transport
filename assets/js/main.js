@@ -99,6 +99,7 @@
     setupHeroGlow();
     setupLegalLinks();
     setupEngineSound();
+    setupReviewForm();
     setupReviewsCarousel();
   });
 
@@ -535,6 +536,42 @@
       status.className = "form-status success";
       status.innerHTML =
         "<strong>Request Received.</strong> Heavy Hitter has received your business account request. We will review it and follow up to confirm scheduling and pricing.";
+      form.reset();
+    });
+  }
+
+  /* ---- Customer review submission form
+     (mailto fallback, same pattern as the quote and business forms) ---- */
+  function setupReviewForm() {
+    var form = document.getElementById("review-form");
+    if (!form) return;
+    var status = document.getElementById("review-form-status");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      status.className = "form-status";
+      status.textContent = "";
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      var data = collectFormData(form);
+      var lines = [
+        "New customer review submission — Heavy Hitter Transport",
+        "",
+        "Name: " + (data.name || ""),
+        "Rating: " + (data.rating || ""),
+        "Review: " + (data.review_text || "")
+      ];
+      var subject = encodeURIComponent("Website Review Submission — " + (data.name || "New Review"));
+      var body = encodeURIComponent(lines.join("\n"));
+      window.location.href = "mailto:" + EMAIL_ADDRESS + "?subject=" + subject + "&body=" + body;
+
+      status.className = "form-status success";
+      status.innerHTML =
+        "<strong>Thank You.</strong> Your review has been sent to Heavy Hitter for a quick check, then published here.";
       form.reset();
     });
   }
