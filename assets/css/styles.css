@@ -877,9 +877,12 @@ h1, h2, h3, h4 {
 /* ---- 3D pointer-tilt (desktop, fine-pointer only; see setupTiltEffect in main.js) ----
    JS sets --tilt-x/--tilt-y/--tilt-lift per-frame from pointer position and toggles this
    class; base :hover rules above still apply as the resting state on touch/no-JS.
-   IMPORTANT: selector must be at least as specific as .service-card:hover / .tier-card:hover
-   (a class + pseudo-class = 2 "class" units), or the plain hover transform silently wins
-   the cascade and the 3D transform never renders even though the JS sets it correctly. */
+   IMPORTANT: service-card also carries .reveal, and .reveal.in-view (line ~1561, same
+   2-class specificity, declared later in the file) permanently sets its own `transform`
+   once the scroll-reveal fires — which is on every card, immediately. That rule was
+   silently winning the cascade every time, so the tilt transform was computed correctly
+   by JS but never actually rendered. `!important` here removes the whack-a-mole with any
+   current or future rule that also touches `transform` on these cards. */
 .service-card.tilt-active,
 .tier-card.tilt-active {
   transition: transform .06s linear, box-shadow .15s ease;
@@ -887,12 +890,12 @@ h1, h2, h3, h4 {
     rotateX(var(--tilt-x, 0deg))
     rotateY(var(--tilt-y, 0deg))
     translateY(var(--tilt-lift, -4px))
-    translateZ(0);
+    translateZ(0) !important;
   box-shadow: 0 22px 40px -18px rgba(0,0,0,0.55);
 }
 @media (prefers-reduced-motion: reduce) {
   .service-card.tilt-active,
-  .tier-card.tilt-active { transform: none; transition: transform .2s ease; box-shadow: none; }
+  .tier-card.tilt-active { transform: none !important; transition: transform .2s ease; box-shadow: none; }
 }
 .service-card .icon {
   width: 46px; height: 46px;
