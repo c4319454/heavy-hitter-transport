@@ -97,6 +97,7 @@
     setupEstimator();
     setupScrollProgress();
     setupHeroGlow();
+    setupTiltEffect();
     setupLegalLinks();
     setupEngineSound();
     setupReviewForm();
@@ -267,6 +268,48 @@
       glow.style.setProperty("--mx", x + "%");
       glow.style.setProperty("--my", y + "%");
     }, { passive: true });
+  }
+
+  /* ---- 3D pointer-tilt for service/tier cards (desktop, fine-pointer only) ----
+     Additive to the hero glow and scroll reveals above — does not touch either. Tilt angle
+     is driven by pointer position relative to each card's center, capped at a subtle,
+     premium max angle (not gimmicky). Skips touch/coarse pointers and respects
+     prefers-reduced-motion (the CSS side also hard-disables .tilt-active there as a
+     second guard in case JS runs before the media-query check settles). */
+  function setupTiltEffect() {
+    if (window.matchMedia && (
+      window.matchMedia("(hover: none)").matches ||
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )) return;
+
+    var MAX_TILT_DEG = 9;
+    var cards = document.querySelectorAll(".service-card, .tier-card");
+    if (!cards.length) return;
+
+    cards.forEach(function (card) {
+      var baseLift = card.classList.contains("tier-card") ? "-5px" : "-4px";
+
+      card.addEventListener("pointermove", function (e) {
+        if (e.pointerType === "touch") return;
+        var rect = card.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width;  // 0..1
+        var py = (e.clientY - rect.top) / rect.height;   // 0..1
+        var rotY = (px - 0.5) * 2 * MAX_TILT_DEG;        // left/right tilt
+        var rotX = (0.5 - py) * 2 * MAX_TILT_DEG;         // up/down tilt
+        card.style.setProperty("--tilt-x", rotX.toFixed(2) + "deg");
+        card.style.setProperty("--tilt-y", rotY.toFixed(2) + "deg");
+        card.style.setProperty("--tilt-lift", baseLift);
+        card.classList.add("tilt-active");
+      }, { passive: true });
+
+      card.addEventListener("pointerleave", function () {
+        card.classList.remove("tilt-active");
+        card.style.removeProperty("--tilt-x");
+        card.style.removeProperty("--tilt-y");
+        card.style.removeProperty("--tilt-lift");
+      }, { passive: true });
+    });
   }
 
   function setupMobileMenu() {
