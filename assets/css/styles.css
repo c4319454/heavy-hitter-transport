@@ -1176,19 +1176,35 @@ h1, h2, h3, h4 {
 }
 .why-item h3 { font-size: 15.5px; letter-spacing: 0.02em; }
 
-/* ---------- Published customer reviews ---------- */
-.reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+/* ---------- Published customer reviews (auto-sliding carousel) ---------- */
+/* Viewport clips to exactly 3 cards' worth of width so the section never grows
+   as more reviews are added; assets/js/main.js (setupReviewsCarousel) slides
+   .reviews-track left on a timer and loops through every .review-card. */
+.reviews-carousel-viewport {
+  overflow: hidden;
   margin-bottom: 40px;
 }
+.reviews-track {
+  display: flex;
+  gap: 20px;
+}
 .review-card {
+  flex: 0 0 calc((100% - 40px) / 3);
+  min-width: 0;
   padding: 26px 24px;
   border: 1px solid var(--c-border-strong);
   background: var(--c-charcoal);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-1);
+}
+@media (max-width: 900px) {
+  .review-card { flex-basis: calc((100% - 20px) / 2); }
+}
+@media (max-width: 620px) {
+  .review-card { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reviews-track { transition: none !important; }
 }
 .review-stars {
   color: var(--c-gold);
