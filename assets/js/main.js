@@ -270,46 +270,131 @@
     }, { passive: true });
   }
 
-  /* ---- 3D pointer-tilt for service/tier cards (desktop, fine-pointer only) ----
-     Additive to the hero glow and scroll reveals above — does not touch either. Tilt angle
-     is driven by pointer position relative to each card's center, capped at a subtle,
-     premium max angle (not gimmicky). Skips touch/coarse pointers and respects
-     prefers-reduced-motion (the CSS side also hard-disables .tilt-active there as a
-     second guard in case JS runs before the media-query check settles). */
+  /* ---- 3D tilt for service/tier cards — desktop (mouse) + mobile (gyroscope/touch) ----
+     Additive to the hero glow and scroll reveals above — does not touch either. Respects
+     prefers-reduced-motion everywhere (the CSS side also hard-disables .tilt-active there
+     as a second guard). Three independent drivers share the same --tilt-x/--tilt-y/
+     --tilt-lift/.tilt-active contract, so exactly one is active on a given device:
+       1. Desktop mouse — pointer position relative to card center (unchanged from before).
+       2. Mobile gyroscope — DeviceOrientationEvent tilts cards as the visitor physically
+          tilts the phone. This is the mobile-native equivalent of "follow the cursor":
+          there is no persistent pointer on a touchscreen, so cursor-position tilt has
+          nothing to drive it there — orientation data is the real substitute, not a
+          downgrade. iOS 13+ requires a user gesture to grant motion-sensor permission
+          (DeviceOrientationEvent.requestPermission cannot fire on page load), so the
+          request piggybacks on the visitor's first tap — the same gesture that already
+          unlocks the engine sound in setupEngineSound.
+       3. Touch-drag fallback — if motion sensors are unavailable, permission is denied,
+          or the browser lacks the API entirely (most Android browsers pre-gyroscope-API,
+          desktop-as-touch devices), a finger drag across a card tilts it like the mouse
+          version, so mobile visitors still get SOME 3D response either way. */
   function setupTiltEffect() {
-    if (window.matchMedia && (
-      window.matchMedia("(hover: none)").matches ||
-      window.matchMedia("(pointer: coarse)").matches ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     var MAX_TILT_DEG = 9;
     var cards = document.querySelectorAll(".service-card, .tier-card");
     if (!cards.length) return;
 
-    cards.forEach(function (card) {
-      var baseLift = card.classList.contains("tier-card") ? "-5px" : "-4px";
+    function baseLiftFor(card) {
+      return card.classList.contains("tier-card") ? "-5px" : "-4px";
+    }
+    function applyTilt(card, rotX, rotY) {
+      card.style.setProperty("--tilt-x", rotX.toFixed(2) + "deg");
+      card.style.setProperty("--tilt-y", rotY.toFixed(2) + "deg");
+      card.style.setProperty("--tilt-lift", baseLiftFor(card));
+      card.classList.add("tilt-active");
+    }
+    function clearTilt(card) {
+      card.classList.remove("tilt-active");
+      card.style.removeProperty("--tilt-x");
+      card.style.removeProperty("--tilt-y");
+      card.style.removeProperty("--tilt-lift");
+    }
 
-      card.addEventListener("pointermove", function (e) {
-        if (e.pointerType === "touch") return;
-        var rect = card.getBoundingClientRect();
-        var px = (e.clientX - rect.left) / rect.width;  // 0..1
-        var py = (e.clientY - rect.top) / rect.height;   // 0..1
-        var rotY = (px - 0.5) * 2 * MAX_TILT_DEG;        // left/right tilt
-        var rotX = (0.5 - py) * 2 * MAX_TILT_DEG;         // up/down tilt
-        card.style.setProperty("--tilt-x", rotX.toFixed(2) + "deg");
-        card.style.setProperty("--tilt-y", rotY.toFixed(2) + "deg");
-        card.style.setProperty("--tilt-lift", baseLift);
-        card.classList.add("tilt-active");
-      }, { passive: true });
+    var hasFinePointer = !(window.matchMedia && (
+      window.matchMedia("(hover: none)").matches || window.matchMedia("(pointer: coarse)").matches
+    ));
 
-      card.addEventListener("pointerleave", function () {
-        card.classList.remove("tilt-active");
-        card.style.removeProperty("--tilt-x");
-        card.style.removeProperty("--tilt-y");
-        card.style.removeProperty("--tilt-lift");
+    // 1. Desktop mouse-driven tilt — unchanged behavior.
+    if (hasFinePointer) {
+      cards.forEach(function (card) {
+        card.addEventListener("pointermove", function (e) {
+          if (e.pointerType === "touch") return;
+          var rect = card.getBoundingClientRect();
+          var px = (e.clientX - rect.left) / rect.width;
+          var py = (e.clientY - rect.top) / rect.height;
+          applyTilt(card, (0.5 - py) * 2 * MAX_TILT_DEG, (px - 0.5) * 2 * MAX_TILT_DEG);
+        }, { passive: true });
+        card.addEventListener("pointerleave", function () { clearTilt(card); }, { passive: true });
+      });
+      return; // desktop has its driver; mobile drivers below are for coarse/touch devices only.
+    }
+
+    // 2. Mobile gyroscope tilt, with 3. touch-drag as its fallback.
+    var gyroActive = false;
+
+    function startGyroTilt() {
+      if (gyroActive || typeof window.DeviceOrientationEvent === "undefined") return;
+      gyroActive = true;
+      window.addEventListener("deviceorientation", function (e) {
+        if (e.beta === null || e.gamma === null) return;
+        // beta: front/back tilt (-180..180), gamma: left/right tilt (-90..90).
+        // Centered on a comfortable "holding the phone upright" pose (~35° back-tilt).
+        var rotX = clampDeg((e.beta - 35) * 0.35, MAX_TILT_DEG);
+        var rotY = clampDeg(e.gamma * 0.35, MAX_TILT_DEG);
+        cards.forEach(function (card) {
+          if (isInViewport(card)) applyTilt(card, rotX, rotY); else clearTilt(card);
+        });
       }, { passive: true });
+    }
+
+    function clampDeg(v, max) { return Math.max(-max, Math.min(max, v)); }
+    function isInViewport(el) {
+      var r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < (window.innerHeight || document.documentElement.clientHeight);
+    }
+
+    function requestMotionPermissionThenStart() {
+      if (typeof window.DeviceOrientationEvent === "undefined") { setupTouchDragFallback(); return; }
+      if (typeof window.DeviceOrientationEvent.requestPermission === "function") {
+        // iOS 13+: must be requested from within a user-gesture handler.
+        window.DeviceOrientationEvent.requestPermission().then(function (state) {
+          if (state === "granted") startGyroTilt(); else setupTouchDragFallback();
+        }).catch(function () { setupTouchDragFallback(); });
+      } else {
+        // Android / other browsers expose orientation data without a permission prompt.
+        startGyroTilt();
+      }
+    }
+
+    // Piggyback the permission request on the visitor's first completed gesture — the
+    // same tap/click that unlocks the engine sound — since iOS forbids requesting it on
+    // page load with no gesture at all.
+    var firstGestureEvents = ["click", "touchend", "keydown"];
+    function onFirstGesture() {
+      firstGestureEvents.forEach(function (evt) { window.removeEventListener(evt, onFirstGesture, true); });
+      requestMotionPermissionThenStart();
+    }
+    firstGestureEvents.forEach(function (evt) {
+      window.addEventListener(evt, onFirstGesture, { capture: true, passive: true });
     });
+
+    // 3. Touch-drag fallback — used only if gyroscope is unavailable/denied. Tilts the
+    // touched card based on finger position, same math as the desktop mouse version.
+    function setupTouchDragFallback() {
+      cards.forEach(function (card) {
+        card.addEventListener("touchmove", function (e) {
+          if (gyroActive || !e.touches || !e.touches.length) return;
+          var t = e.touches[0];
+          var rect = card.getBoundingClientRect();
+          var px = (t.clientX - rect.left) / rect.width;
+          var py = (t.clientY - rect.top) / rect.height;
+          if (px < 0 || px > 1 || py < 0 || py > 1) return; // finger moved off this card
+          applyTilt(card, (0.5 - py) * 2 * MAX_TILT_DEG, (px - 0.5) * 2 * MAX_TILT_DEG);
+        }, { passive: true });
+        card.addEventListener("touchend", function () { clearTilt(card); }, { passive: true });
+      });
+    }
   }
 
   function setupMobileMenu() {
