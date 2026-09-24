@@ -93,69 +93,14 @@
     setupForm();
     setupBusinessForm();
     setupPartnerForm();
-    setupReviewForm();
     setupYear();
     setupEstimator();
     setupScrollProgress();
     setupHeroGlow();
     setupLegalLinks();
     setupEngineSound();
-    setupTiltCards();
-    setupHeroParallax();
+    setupReviewsCarousel();
   });
-
-  /* ---- 2026-style 3D depth: pointer-driven tilt on service/tier/partner cards ----
-     Desktop/hover-capable pointers only; skipped entirely on touch and when the visitor
-     has requested reduced motion. Uses inline transform (always wins over the CSS hover
-     rule) so the tilt tracks the cursor, then clears back to the CSS default on leave. */
-  function setupTiltCards() {
-    if (!window.matchMedia || !window.matchMedia("(hover: hover)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var cards = document.querySelectorAll(".tier-card, .service-card, .partner-equipment-card");
-    cards.forEach(function (card) {
-      var raf = null;
-      card.addEventListener("pointermove", function (e) {
-        var rect = card.getBoundingClientRect();
-        var px = (e.clientX - rect.left) / rect.width;
-        var py = (e.clientY - rect.top) / rect.height;
-        var rx = (0.5 - py) * 9;
-        var ry = (px - 0.5) * 11;
-        if (raf) cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(function () {
-          card.style.transform =
-            "perspective(900px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) +
-            "deg) translateY(-4px) translateZ(12px)";
-        });
-      }, { passive: true });
-      card.addEventListener("pointerleave", function () {
-        if (raf) cancelAnimationFrame(raf);
-        card.style.transform = "";
-      }, { passive: true });
-    });
-  }
-
-  /* ---- 2026-style 3D depth: hero background/grid parallax on scroll ----
-     Cheap (one rect read + two transforms per animation frame, rAF-throttled), and
-     fully skipped for reduced-motion visitors. */
-  function setupHeroParallax() {
-    var hero = document.querySelector(".hero");
-    var bgImg = document.querySelector(".hero-bg img");
-    var grid = document.querySelector(".hero-grid-overlay");
-    if (!hero || (!bgImg && !grid)) return;
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var ticking = false;
-    function update() {
-      var rect = hero.getBoundingClientRect();
-      var progress = Math.min(1, Math.max(0, -rect.top / (rect.height || 1)));
-      if (bgImg) bgImg.style.transform = "scale(1.08) translateY(" + (progress * 34) + "px)";
-      if (grid) grid.style.transform = "translateY(" + (progress * 60) + "px)";
-      ticking = false;
-    }
-    window.addEventListener("scroll", function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    }, { passive: true });
-    update();
-  }
 
   /* ---- Landing engine-startup sound (staged, inert until ENGINE_SOUND_SRC is set) ----
      Browsers block sound-with-audio from firing with zero user interaction, so this plays on
@@ -333,6 +278,72 @@
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
     items.forEach(function (el) { observer.observe(el); });
+  }
+
+  /* ---- Reviews carousel: shows at most 3 cards, auto-slides through the full
+     review list so the section never grows with the review count. Generic —
+     works for any number of .review-card elements inside #reviews-track. ---- */
+  function setupReviewsCarousel() {
+    var track = document.getElementById("reviews-track");
+    if (!track) return;
+    var originals = Array.prototype.slice.call(track.children);
+    var count = originals.length;
+    if (count < 2) return; // nothing to rotate
+
+    // Duplicate the full set once so the slide can loop seamlessly, then
+    // snap back to the start once the duplicate set scrolls into place.
+    originals.forEach(function (card) {
+      track.appendChild(card.cloneNode(true));
+    });
+
+    var GAP = 20; // px — must match .reviews-track gap in styles.css
+    var index = 0;
+    var timer = null;
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function cardStep() {
+      var first = track.children[0];
+      return first ? first.getBoundingClientRect().width + GAP : 0;
+    }
+
+    function advance() {
+      index += 1;
+      track.style.transition = "transform 0.7s ease";
+      track.style.transform = "translateX(-" + (index * cardStep()) + "px)";
+      if (index >= count) {
+        setTimeout(function () {
+          track.style.transition = "none";
+          track.style.transform = "translateX(0px)";
+          index = 0;
+        }, 720);
+      }
+    }
+
+    function start() {
+      if (timer) clearInterval(timer);
+      if (reduceMotion) return;
+      timer = setInterval(advance, 4500);
+    }
+
+    function stop() {
+      if (timer) clearInterval(timer);
+    }
+
+    start();
+
+    var viewport = track.closest(".reviews-carousel-viewport") || track.parentElement;
+    if (viewport) {
+      viewport.addEventListener("mouseenter", stop);
+      viewport.addEventListener("mouseleave", start);
+      viewport.addEventListener("touchstart", stop, { passive: true });
+      viewport.addEventListener("touchend", start, { passive: true });
+    }
+
+    window.addEventListener("resize", function () {
+      // Re-anchor on resize so a mid-slide card width change doesn't leave a gap.
+      track.style.transition = "none";
+      track.style.transform = "translateX(-" + (index * cardStep()) + "px)";
+    });
   }
 
   function setupFaq() {
@@ -571,40 +582,6 @@
     });
   }
 
-  function setupReviewForm() {
-    var form = document.getElementById("review-form");
-    if (!form) return;
-    var status = document.getElementById("review-form-status");
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      status.className = "form-status";
-      status.textContent = "";
-
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
-
-      var data = collectFormData(form);
-      var lines = [
-        "New customer review submission — Heavy Hitter Transport",
-        "",
-        "Name: " + (data.name || ""),
-        "Rating: " + (data.rating || ""),
-        "Review: " + (data.review_text || "")
-      ];
-      var subject = encodeURIComponent("Website Review Submission — " + (data.name || "Customer"));
-      var body = encodeURIComponent(lines.join("\n"));
-      window.location.href = "mailto:" + EMAIL_ADDRESS + "?subject=" + subject + "&body=" + body;
-
-      status.className = "form-status success";
-      status.innerHTML =
-        "<strong>Thank You.</strong> Your review has been sent to Heavy Hitter for approval and will be published here once reviewed.";
-      form.reset();
-    });
-  }
-
   /* ---- Instant estimate calculator ---- */
   var SERVICE_LABELS = {
     moving: "Moving / Delivery (Box Truck + Crew)",
@@ -637,58 +614,20 @@
 
     function show(el, on) { if (el) el.style.display = on ? "" : "none"; }
 
-    function clearStaleEstimate() {
-      // A visible-but-outdated estimate/Request button from a prior service/zone selection must
-      // not linger — clear it the instant an input changes so nothing stale can be submitted.
-      lastEstimate = null;
-      var box = document.getElementById("est-result");
-      if (box) box.innerHTML = "";
-    }
-
     function syncFields() {
       var service = serviceEl.value;
       var isFreight = service === "freightDockToDock" || service === "freightHandLoad";
-      var showHours = service === "moving" || service === "truckDriverOnly";
-      var showPallets = isFreight;
-      var showLoad = service === "moving";
-      var showStops = service === "moving" || isFreight;
-      var showRush = service === "courier";
-
-      show(loadField, showLoad);
-      show(palletsField, showPallets);
-      show(hoursField, showHours);
-      show(stopsField, showStops);
-      show(rushField, showRush);
+      show(loadField, service === "moving");
+      show(palletsField, isFreight);
+      show(hoursField, service === "moving" || service === "truckDriverOnly");
+      show(stopsField, service === "moving" || isFreight);
+      show(rushField, service === "courier");
       // Tri-State load-size choice only matters for the moving service; miles always shown.
-      if (loadField) loadField.style.display = (showLoad && zoneEl.value !== "tristate") ? "" : "none";
-
-      // A field that is hidden for the current service must not silently carry over a value
-      // typed while a different service was selected — reset it so it can never be billed
-      // against a service it was never shown for (e.g. hours left over from "Moving" charged
-      // as extra time on "Dedicated Local Delivery").
-      var hoursInput = document.getElementById("est-hours");
-      if (hoursInput && !showHours) hoursInput.value = "";
-      var palletsInput = document.getElementById("est-pallets");
-      if (palletsInput && !showPallets) palletsInput.value = "";
-      var loadInput = document.getElementById("est-load");
-      if (loadInput && !(showLoad && zoneEl.value !== "tristate")) loadInput.value = "full";
-      var stopsInput = document.getElementById("est-stops");
-      if (stopsInput && !showStops) stopsInput.value = "0";
-      var rushInput = document.getElementById("est-rush");
-      if (rushInput && !showRush) rushInput.checked = false;
-
-      clearStaleEstimate();
+      if (loadField) loadField.style.display = (service === "moving" && zoneEl.value !== "tristate") ? "" : "none";
     }
 
     serviceEl.addEventListener("change", syncFields);
     zoneEl.addEventListener("change", syncFields);
-    // Any manual edit to a live input also invalidates whatever estimate is on screen —
-    // the visible price/Request button must never outlive the inputs it was computed from.
-    ["est-miles", "est-hours", "est-stops", "est-pallets", "est-load", "est-rush"].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener("input", clearStaleEstimate);
-      if (el) el.addEventListener("change", clearStaleEstimate);
-    });
     syncFields();
 
     btn.addEventListener("click", function () {
