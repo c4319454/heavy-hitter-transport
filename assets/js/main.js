@@ -105,11 +105,24 @@
 
   /* ---- Landing engine-startup sound (staged, inert until ENGINE_SOUND_SRC is set) ----
      Browsers block sound-with-audio from firing with zero user interaction, so this plays on
-     the visitor's FIRST interaction after page load (click/tap/scroll/keypress) — functionally
-     "plays once as the page opens" for any real visitor. Fires exactly once per page load; a
-     fresh load (refresh or navigating to another page) resets the in-memory flag below, so it
-     can play again on that new load. Leave ENGINE_SOUND_SRC empty to keep this fully inert —
-     filling it in and redeploying is the only change needed to activate it, no markup edits. */
+     the visitor's FIRST interaction after page load — functionally "plays once as the page
+     opens" for any real visitor. Fires once per page load; a fresh load (refresh or navigating
+     to another page) resets the in-memory flag below, so it can play again on that new load.
+     Leave ENGINE_SOUND_SRC empty to keep this fully inert — filling it in and redeploying is
+     the only change needed to activate it, no markup edits.
+
+     Trigger events are deliberately "click" / "keydown" / "touchend" — NOT "pointerdown" or
+     "touchstart". Those fire at the START of a tap/click, before the browser has necessarily
+     registered it as a completed user gesture; Safari in particular does not treat touchstart
+     as sufficient to unlock audio and rejects play() called from it. Using the END-of-gesture
+     events (touchend/click) plus keydown matches what every major browser actually accepts.
+
+     The "played" flag and listener teardown happen INSIDE audio.play().then(), not eagerly
+     before the call: attempting play() on the very first, possibly-too-early gesture and then
+     marking it consumed regardless of outcome is what silently kills the sound for the rest of
+     that visit if that first attempt is rejected — the visitor never hears it and no later tap
+     tries again. Only a CONFIRMED successful play retires the listeners; a rejected attempt
+     leaves them active so the very next real gesture gets another try. */
   var ENGINE_SOUND_SRC = "assets/audio/engine-start.mp3"; // owner-approved: Pixabay "Big Truck engine" (freesound_community), trimmed to ~5s
   var ENGINE_SOUND_VOLUME = 0.55;
 
@@ -120,19 +133,25 @@
     audio.volume = ENGINE_SOUND_VOLUME;
     audio.preload = "auto";
 
+    var triggerEvents = ["click", "touchend", "keydown"];
+
     function playOnce() {
       if (played) return;
-      played = true;
-      audio.play().catch(function () { /* ignore — a blocked/failed play is not fatal */ });
-      removeListeners();
+      audio.play().then(function () {
+        played = true;
+        removeListeners();
+      }).catch(function () {
+        /* Rejected (not a valid gesture yet in this browser, or still loading) — leave
+           listeners in place so the next real tap/click/keypress tries again. */
+      });
     }
     function removeListeners() {
-      ["pointerdown", "touchstart", "keydown", "scroll"].forEach(function (evt) {
+      triggerEvents.forEach(function (evt) {
         window.removeEventListener(evt, playOnce, true);
       });
     }
-    ["pointerdown", "touchstart", "keydown", "scroll"].forEach(function (evt) {
-      window.addEventListener(evt, playOnce, { capture: true, passive: true, once: true });
+    triggerEvents.forEach(function (evt) {
+      window.addEventListener(evt, playOnce, { capture: true, passive: true });
     });
   }
 
