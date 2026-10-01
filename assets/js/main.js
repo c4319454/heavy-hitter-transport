@@ -177,7 +177,7 @@
     var insuranceEls = document.querySelectorAll("[data-insurance-display]");
     usdotEls.forEach(function (el) {
       if (BUSINESS_CREDENTIALS.usdot) {
-        el.textContent = BUSINESS_CREDENTIALS.usdot;
+        el.textContent = BUSINESS_CREDENTIALS.usdot + " \u2014 Active";
         el.setAttribute("data-confirmed", "true");
       }
     });
