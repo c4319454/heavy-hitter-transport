@@ -89,6 +89,7 @@
     setupMobileMenu();
     setupReveal();
     setupFaq();
+    setupPod();
     setupRadioChips();
     setupForm();
     setupBusinessForm();
@@ -438,14 +439,9 @@
     var count = originals.length;
     if (count < 2) return; // nothing to rotate
 
-    // Duplicate the full set once so the slide can loop seamlessly, then
-    // snap back to the start once the duplicate set scrolls into place.
-    originals.forEach(function (card) {
-      track.appendChild(card.cloneNode(true));
-    });
-
+    // Seamless loop without duplicating any review in the page: slide one card,
+    // then move the first card to the end (each review exists exactly once).
     var GAP = 20; // px — must match .reviews-track gap in styles.css
-    var index = 0;
     var timer = null;
     var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -455,16 +451,13 @@
     }
 
     function advance() {
-      index += 1;
       track.style.transition = "transform 0.7s ease";
-      track.style.transform = "translateX(-" + (index * cardStep()) + "px)";
-      if (index >= count) {
-        setTimeout(function () {
-          track.style.transition = "none";
-          track.style.transform = "translateX(0px)";
-          index = 0;
-        }, 720);
-      }
+      track.style.transform = "translateX(-" + cardStep() + "px)";
+      setTimeout(function () {
+        track.style.transition = "none";
+        track.appendChild(track.children[0]);
+        track.style.transform = "translateX(0px)";
+      }, 720);
     }
 
     function start() {
@@ -490,8 +483,31 @@
     window.addEventListener("resize", function () {
       // Re-anchor on resize so a mid-slide card width change doesn't leave a gap.
       track.style.transition = "none";
-      track.style.transform = "translateX(-" + (index * cardStep()) + "px)";
+      track.style.transform = "translateX(0px)";
     });
+  }
+
+  function setupPod() {
+    var cards = document.querySelectorAll(".pod-card");
+    function close(c) { c.classList.remove("open"); c.querySelector(".pod-a").style.maxHeight = null; c.querySelector(".pod-q").setAttribute("aria-expanded", "false"); }
+    function open(c) { c.classList.add("open"); var a = c.querySelector(".pod-a"); a.style.maxHeight = a.scrollHeight + "px"; c.querySelector(".pod-q").setAttribute("aria-expanded", "true"); }
+    cards.forEach(function (c) {
+      c.querySelector(".pod-q").addEventListener("click", function () {
+        var was = c.classList.contains("open");
+        cards.forEach(close);          // one open at a time
+        if (!was) open(c);
+      });
+    });
+    document.querySelectorAll(".flow-link").forEach(function (l) {
+      l.addEventListener("click", function (e) {
+        e.preventDefault();
+        var c = document.getElementById("pod-" + l.getAttribute("data-pod"));
+        if (!c) return;
+        cards.forEach(close); open(c);
+        c.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+    window.addEventListener("resize", function () { cards.forEach(function (c) { if (c.classList.contains("open")) { var a = c.querySelector(".pod-a"); a.style.maxHeight = a.scrollHeight + "px"; } }); });
   }
 
   function setupFaq() {
@@ -636,7 +652,7 @@
   function showSuccess(status, form) {
     status.className = "form-status success";
     status.innerHTML =
-      "<strong>Request Received.</strong> Heavy Hitter has received your job details. We will review the request and contact you to confirm availability and final pricing.";
+      "<strong>Almost done.</strong> Your email app has opened with your job details. Please press Send to submit your request, or call (347) 832-5320. We will then review it and contact you to confirm availability and final pricing.";
     form.reset();
     document.querySelectorAll(".radio-chip.active").forEach(function (c) {
       c.classList.remove("active");
@@ -682,7 +698,7 @@
 
       status.className = "form-status success";
       status.innerHTML =
-        "<strong>Request Received.</strong> Heavy Hitter has received your business account request. We will review it and follow up to confirm scheduling and pricing.";
+        "<strong>Almost done.</strong> Your email app has opened with your business account request. Please press Send to submit it, or call (347) 832-5320. We will then review it and follow up to confirm scheduling and pricing.";
       form.reset();
     });
   }
@@ -761,7 +777,7 @@
 
       status.className = "form-status success";
       status.innerHTML =
-        "<strong>Application Received.</strong> Heavy Hitter has received your partner application. We will review your equipment, coverage area, and authority, then follow up to confirm assignment terms.";
+        "<strong>Almost done.</strong> Your email app has opened with your partner application. Please press Send to submit it, or call (347) 832-5320. We will then review your equipment, coverage area, and authority, then follow up to confirm assignment terms.";
       form.reset();
     });
   }
